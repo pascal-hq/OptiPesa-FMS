@@ -9,9 +9,9 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # Existing transactions endpoints
     path('api/', include('transactions.urls')),
-
-    # New CRUD APIs
     path('api/', include('config.api_urls')),
+    path('api/', include('analytics.urls')),
+
+
 ]

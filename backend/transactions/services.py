@@ -92,3 +92,39 @@ def create_transfer(sender, receiver, amount, narration=''):
         narration=narration
     )
     return tx
+from django.core.exceptions import ValidationError
+
+@db_transaction.atomic
+def create_sale(receiver, amount, department=None, employee=None, service=None,
+                channel="internal", customer_name="", reference="", narration=""):
+    amount = Decimal(amount)
+    if amount <= 0:
+        raise ValidationError("Sale amount must be greater than 0.")
+
+    # Optional consistency checks
+    if service and department and service.department_id != department.id:
+        raise ValidationError("Service does not belong to the selected department.")
+
+    if employee and department and employee.department_id != department.id:
+        raise ValidationError("Employee does not belong to the selected department.")
+
+    # Credit the receiver (business wallet)
+    receiver_account = _get_account_for_user(receiver)
+    receiver_account.balance += amount
+    receiver_account.save()
+
+    tx = Transaction.objects.create(
+        tx_type="sale",
+        channel=channel,
+        status="successful",
+        sender=None,
+        receiver=receiver,
+        department=department,
+        employee=employee,
+        service=service,
+        customer_name=customer_name,
+        amount=amount,
+        reference=reference,
+        narration=narration,
+    )
+    return tx
