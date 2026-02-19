@@ -152,3 +152,14 @@ REST_FRAMEWORK = {
 
 
 AUTH_USER_MODEL = 'users.User'
+from decouple import config
+
+MPESA_ENV = config("MPESA_ENV", default="sandbox")
+MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY", default="")
+MPESA_CONSUMER_SECRET = config("MPESA_CONSUMER_SECRET", default="")
+
+MPESA_SHORTCODE = config("MPESA_SHORTCODE", default="")
+MPESA_PASSKEY = config("MPESA_PASSKEY", default="")
+MPESA_CALLBACK_URL = config("MPESA_CALLBACK_URL", default="")
+MPESA_PARTYB = config("MPESA_PARTYB", default=MPESA_SHORTCODE)
+MPESA_TRANSACTION_TYPE = config("MPESA_TRANSACTION_TYPE", default="CustomerPayBillOnline")
