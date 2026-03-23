@@ -154,12 +154,13 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'users.User'
 from decouple import config
 
-MPESA_ENV = config("MPESA_ENV", default="sandbox")
-MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY", default="")
-MPESA_CONSUMER_SECRET = config("MPESA_CONSUMER_SECRET", default="")
+# M-Pesa (Daraja) Settings - SANDBOX
+MPESA_ENV = "sandbox"  # or "production"
 
-MPESA_SHORTCODE = config("MPESA_SHORTCODE", default="")
-MPESA_PASSKEY = config("MPESA_PASSKEY", default="")
-MPESA_CALLBACK_URL = config("MPESA_CALLBACK_URL", default="")
-MPESA_PARTYB = config("MPESA_PARTYB", default=MPESA_SHORTCODE)
-MPESA_TRANSACTION_TYPE = config("MPESA_TRANSACTION_TYPE", default="CustomerPayBillOnline")
+MPESA_CONSUMER_KEY = "YOUR_SANDBOX_CONSUMER_KEY"
+MPESA_CONSUMER_SECRET = "YOUR_SANDBOX_CONSUMER_SECRET"
+
+MPESA_SHORTCODE = "174379"  # default test shortcode
+MPESA_PASSKEY = "YOUR_SANDBOX_PASSKEY"
+
+MPESA_STK_PUSH_CALLBACK_URL = "https://example.com/api/mpesa/callback/"  # replace later with real public URL

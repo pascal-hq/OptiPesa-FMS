@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Dashboard</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-left">
+      <h2>OptiPesa</h2>
+    </div>
+
+    <div class="nav-right">
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <aside class="sidebar">
+    <ul>
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="sales.html">Record Sale</a></li>
+      <li><a href="transactions.html">Transactions</a></li>
+
+      <li class="admin-only"><a href="departments.html">Departments</a></li>
+      <li class="admin-only"><a href="employees.html">Employees</a></li>
+      <li class="admin-only"><a href="services.html">Services</a></li>
+      <li class="admin-only"><a href="expenses.html">Expenses</a></li>
+      <li class="admin-only"><a href="analytics.html">Analytics</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-head">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="muted" id="welcomeText">Welcome</p>
+        <p class="muted small" id="lastUpdated">Last updated: —</p>
+      </div>
+
+      <div class="page-actions">
+        <a href="sales.html">
+          <button class="primary" type="button">Record Sale</button>
+        </a>
+        <button id="refreshBtn" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <p id="message" class="msg"></p>
+
+    <section class="card">
+      <h3>Key Metrics</h3>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Today Sales</div>
+          <div class="kpi-value" id="kpiTodaySales">—</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label">Month Sales</div>
+          <div class="kpi-value" id="kpiMonthSales">—</div>
+        </div>
+
+        <div class="kpi admin-only">
+          <div class="kpi-label">Today Expenses</div>
+          <div class="kpi-value" id="kpiTodayExpenses">—</div>
+        </div>
+
+        <div class="kpi admin-only">
+          <div class="kpi-label">Today Net</div>
+          <div class="kpi-value" id="kpiTodayNet">—</div>
+        </div>
+      </div>
+
+      
+    </section>
+
+    <section class="chart-grid admin-only">
+      <div class="card">
+        <h3>Sales vs Expenses Trend</h3>
+        <canvas id="trendChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Revenue by Department</h3>
+        <canvas id="departmentChart"></canvas>
+      </div>
+    </section>
+
+    <section class="card admin-only" id="topPerfCard">
+      <h3>Top Performers (Month-to-Date)</h3>
+      <div id="topPerformers">Loading...</div>
+    </section>
+
+    <section class="card">
+      <h3>Recent Sales (Last 10)</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date/Time</th>
+            <th>Department</th>
+            <th>Employee</th>
+            <th>Amount</th>
+            <th>Channel</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="recentSalesBody">
+          <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card admin-only" id="recentExpCard">
+      <h3>Recent Expenses (Last 10)</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Department</th>
+            <th>Amount</th>
+            <th>Description</th>
+            <th>Recorded By</th>
+          </tr>
+        </thead>
+        <tbody id="recentExpensesBody">
+          <tr><td colspan="5">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="assets/js/pages/dashboard.js"></script>
+</body>
+</html>

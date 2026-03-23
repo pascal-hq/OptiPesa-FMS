@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OptiPesa</title>
+<script>
+
+const token = localStorage.getItem("access_token");
+
+if (token) {
+  window.location.href = "dashboard.html";
+} else {
+  window.location.href = "login.html";
+}
+
+</script>
+</head>
+<body>
+Loading...
+</body>
+</html>

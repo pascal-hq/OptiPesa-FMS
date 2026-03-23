@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Transactions</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-left">
+      <h2>OptiPesa</h2>
+    </div>
+
+    <div class="nav-right">
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <aside class="sidebar">
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="sales.html">Record Sale</a></li>
+      <li><a href="transactions.html" class="active">Transactions</a></li>
+
+      <li class="admin-only"><a href="departments.html">Departments</a></li>
+      <li class="admin-only"><a href="employees.html">Employees</a></li>
+      <li class="admin-only"><a href="services.html">Services</a></li>
+      <li class="admin-only"><a href="expenses.html">Expenses</a></li>
+      <li class="admin-only"><a href="analytics.html">Analytics</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-head">
+      <div>
+        <h1>Transactions</h1>
+        <p class="muted" id="lastUpdated">Last updated: —</p>
+      </div>
+
+      <div class="page-actions">
+        <button id="refreshBtn" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <p id="message" class="msg"></p>
+
+    <section class="card">
+      <h3>Summary</h3>
+
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi">
+          <div class="kpi-label">Today Sales</div>
+          <div class="kpi-value" id="kpiTodaySales">—</div>
+        </div>
+
+        <div class="kpi admin-only">
+          <div class="kpi-label">Today Expenses</div>
+          <div class="kpi-value" id="kpiTodayExpenses">—</div>
+        </div>
+
+        <div class="kpi admin-only">
+          <div class="kpi-label">Today Net</div>
+          <div class="kpi-value" id="kpiTodayNet">—</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label">Total Transactions</div>
+          <div class="kpi-value" id="kpiTxCount">—</div>
+        </div>
+      </div>
+
+      
+    </section>
+
+    <section class="card">
+      <h3>Filter</h3>
+
+      <div class="tabs" id="txTabs">
+        <button type="button" class="tab active" data-type="all">All</button>
+        <button type="button" class="tab" data-type="sale">Sales</button>
+        <button type="button" class="tab" data-type="deposit">Deposits</button>
+        <button type="button" class="tab" data-type="transfer">Transfers</button>
+        <button type="button" class="tab" data-type="withdrawal">Withdrawals</button>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-item">
+          <label for="searchInput">Search (narration / sender / receiver)</label>
+          <input id="searchInput" type="text" placeholder="e.g. testuser / haircut / mpesa" />
+        </div>
+
+        <div class="filter-item">
+          <label for="statusSelect">Status</label>
+          <select id="statusSelect">
+            <option value="all">All</option>
+            <option value="successful">Successful</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <table class="table" id="txTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Channel</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Narration</th>
+          </tr>
+        </thead>
+        <tbody id="txBody">
+          <tr><td colspan="8">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/transactions.js"></script>
+</body>
+</html>

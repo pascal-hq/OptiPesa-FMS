@@ -1,22 +1,22 @@
 from datetime import datetime
+
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth, TruncDay
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 
-from users.permissions import IsAdminOrManager
 from transactions.models import Transaction
 from expenses.models import Expense
 
 
 def _parse_date(value):
-    # expects YYYY-MM-DD
     return datetime.strptime(value, "%Y-%m-%d").date()
 
 
 class AnalyticsOverviewAPIView(APIView):
-    permission_classes = [IsAdminOrManager]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         start_date = request.query_params.get("start_date")
@@ -47,12 +47,12 @@ class AnalyticsOverviewAPIView(APIView):
                 "sales_count": sales_qs.count(),
                 "expense_count": expenses_qs.count(),
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
 class AnalyticsPerformanceAPIView(APIView):
-    permission_classes = [IsAdminOrManager]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         start_date = request.query_params.get("start_date")
@@ -90,12 +90,12 @@ class AnalyticsPerformanceAPIView(APIView):
                 "revenue_by_department": list(dept_rev),
                 "revenue_by_employee": list(emp_rev),
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
 class AnalyticsTrendsAPIView(APIView):
-    permission_classes = [IsAdminOrManager]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         period = request.query_params.get("period", "month")  # "day" or "month"
@@ -130,20 +130,10 @@ class AnalyticsTrendsAPIView(APIView):
                 .order_by("p")
             )
 
-        sales_data = [
-            {"period": str(x["p"].date() if hasattr(x["p"], "date") else x["p"]), "total": str(x["total"])}
-            for x in sales_group
-        ]
-        exp_data = [
-            {"period": str(x["p"].date() if hasattr(x["p"], "date") else x["p"]), "total": str(x["total"])}
-            for x in exp_group
-        ]
+        sales_data = [{"period": str(x["p"]), "total": str(x["total"])} for x in sales_group]
+        exp_data = [{"period": str(x["p"]), "total": str(x["total"])} for x in exp_group]
 
         return Response(
-            {
-                "period": period,
-                "sales_trend": sales_data,
-                "expenses_trend": exp_data,
-            },
-            status=status.HTTP_200_OK
+            {"period": period, "sales_trend": sales_data, "expenses_trend": exp_data},
+            status=status.HTTP_200_OK,
         )

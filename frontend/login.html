@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OptiPesa | Login</title>
+  <link rel="stylesheet" href="/frontend/assets/css/style.css">
+</head>
+
+<body>
+  <main class="container">
+    <h1>OptiPesa</h1>
+    <p class="subtitle">Login to continue</p>
+
+    <form id="loginForm" class="card">
+      <label for="username">Username</label>
+      <input id="username" type="text" placeholder="Enter username" required />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="Enter password" required />
+
+      <button type="submit" class="primary">Login</button>
+
+      <p id="message" class="msg"></p>
+    </form>
+  </main>
+
+  <!-- scripts: helpers first, then page -->
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/pages/login.js"></script>
+</body>
+</html>

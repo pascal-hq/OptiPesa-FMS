@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Employees</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-left">
+      <h2>OptiPesa</h2>
+    </div>
+
+    <div class="nav-right">
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <aside class="sidebar">
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="sales.html">Record Sale</a></li>
+      <li><a href="transactions.html">Transactions</a></li>
+
+      <li class="admin-only"><a href="departments.html">Departments</a></li>
+      <li class="admin-only"><a href="employees.html" class="active">Employees</a></li>
+      <li class="admin-only"><a href="services.html">Services</a></li>
+      <li class="admin-only"><a href="expenses.html">Expenses</a></li>
+      <li class="admin-only"><a href="analytics.html">Analytics</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <h1>Employees</h1>
+    <p id="message" class="msg"></p>
+
+    <section class="card">
+      <h3>Add Employee</h3>
+
+      <form id="employeeForm" class="form-grid">
+        <div>
+          <label for="department">Department</label>
+          <select id="department" required>
+            <option value="">Loading departments...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="full_name">Full Name</label>
+          <input id="full_name" type="text" placeholder="e.g. Jane Wambui" required />
+        </div>
+
+        <div>
+          <label for="phone">Phone (optional)</label>
+          <input id="phone" type="text" placeholder="e.g. 07xx..." />
+        </div>
+
+        <div>
+          <label for="email">Email (optional)</label>
+          <input id="email" type="email" placeholder="e.g. jane@email.com" />
+        </div>
+
+        <div>
+          <label for="hired_at">Hired Date (optional)</label>
+          <input id="hired_at" type="date" />
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
+          <input id="is_active" type="checkbox" checked />
+          <label for="is_active" style="margin:0;">Active</label>
+        </div>
+
+        <div style="align-self:end;">
+          <button type="submit" class="primary">Save Employee</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Employee List</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th align="left">Name</th>
+            <th align="left">Department</th>
+            <th align="left">Phone</th>
+            <th align="left">Email</th>
+            <th align="left">Status</th>
+            <th align="left">Hired</th>
+          </tr>
+        </thead>
+        <tbody id="employeesBody">
+          <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/employees.js"></script>
+</body>
+</html>

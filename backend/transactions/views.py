@@ -16,7 +16,10 @@ from .services import create_deposit, create_transfer, create_withdrawal, create
 
 
 class DepositAPIView(APIView):
-    # Admin/Manager only
+    """
+    Admin/Manager/Superuser only.
+    Deposit funds to a user's account (internal).
+    """
     permission_classes = [IsAdminOrManager]
 
     def post(self, request):
@@ -36,7 +39,7 @@ class DepositAPIView(APIView):
             receiver=receiver,
             amount=amount,
             channel="internal",
-            narration=narration
+            narration=narration,
         )
 
         return Response(
@@ -47,13 +50,17 @@ class DepositAPIView(APIView):
                 "status": tx.status,
                 "amount": str(tx.amount),
                 "receiver": receiver.username,
+                "created_at": tx.created_at.isoformat(),
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
 class TransferAPIView(APIView):
-    # Admin/Manager only
+    """
+    Admin/Manager/Superuser only.
+    Transfer funds from logged-in user to another user (internal).
+    """
     permission_classes = [IsAdminOrManager]
 
     def post(self, request):
@@ -69,28 +76,39 @@ class TransferAPIView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "Receiver not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        tx = create_transfer(
-            sender=request.user,
-            receiver=receiver,
-            amount=amount,
-            narration=narration
-        )
+        try:
+            tx = create_transfer(
+                sender=request.user,
+                receiver=receiver,
+                amount=amount,
+                narration=narration,
+            )
+        except DjangoValidationError as e:
+            return Response(
+                {"detail": e.message_dict if hasattr(e, "message_dict") else e.messages},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         return Response(
             {
                 "message": "Transfer successful",
                 "transaction_id": tx.id,
+                "tx_type": tx.tx_type,
                 "status": tx.status,
                 "amount": str(tx.amount),
                 "sender": request.user.username,
                 "receiver": receiver.username,
+                "created_at": tx.created_at.isoformat(),
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
 class WithdrawAPIView(APIView):
-    # Admin/Manager only
+    """
+    Admin/Manager/Superuser only.
+    Withdraw funds from logged-in user account (internal).
+    """
     permission_classes = [IsAdminOrManager]
 
     def post(self, request):
@@ -105,33 +123,48 @@ class WithdrawAPIView(APIView):
                 sender=request.user,
                 amount=amount,
                 channel="internal",
-                narration=narration
+                narration=narration,
             )
         except DjangoValidationError as e:
             return Response(
                 {"detail": e.message_dict if hasattr(e, "message_dict") else e.messages},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(
             {
                 "message": "Withdrawal successful",
                 "transaction_id": tx.id,
+                "tx_type": tx.tx_type,
                 "status": tx.status,
                 "amount": str(tx.amount),
                 "sender": request.user.username,
+                "created_at": tx.created_at.isoformat(),
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
 class TransactionHistoryAPIView(APIView):
-    # Any authenticated user
+    """
+    Any authenticated user.
+    - Admin/Manager/Superuser: see ALL transactions.
+    - Staff: see only transactions where they are sender or receiver.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        qs = (Transaction.objects.filter(sender=request.user) |
-              Transaction.objects.filter(receiver=request.user))
+        user = request.user
+        role = getattr(user, "role", "")
+
+        base_qs = Transaction.objects.select_related(
+            "sender", "receiver", "department", "employee", "service"
+        )
+
+        if user.is_superuser or role in ["admin", "manager"]:
+            qs = base_qs.all()
+        else:
+            qs = base_qs.filter(sender=user) | base_qs.filter(receiver=user)
 
         qs = qs.order_by("-created_at")[:200]
 
@@ -147,7 +180,7 @@ class TransactionHistoryAPIView(APIView):
                 "department": t.department.name if t.department else None,
                 "employee": t.employee.full_name if t.employee else None,
                 "service": t.service.name if t.service else None,
-                "customer_name": t.customer_name,
+                "customer_name": getattr(t, "customer_name", ""),
                 "amount": str(t.amount),
                 "reference": t.reference,
                 "narration": t.narration,
@@ -158,7 +191,10 @@ class TransactionHistoryAPIView(APIView):
 
 
 class SaleAPIView(APIView):
-    # Any authenticated user (staff allowed)
+    """
+    Any authenticated user (staff allowed).
+    Records a sale transaction linked to Department/Employee/Service.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -201,20 +237,24 @@ class SaleAPIView(APIView):
         except DjangoValidationError as e:
             return Response(
                 {"detail": e.message_dict if hasattr(e, "message_dict") else e.messages},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(
             {
                 "message": "Sale recorded successfully",
                 "transaction_id": tx.id,
+                "tx_type": tx.tx_type,
+                "status": tx.status,
                 "amount": str(tx.amount),
                 "channel": tx.channel,
                 "department": tx.department.name if tx.department else None,
                 "employee": tx.employee.full_name if tx.employee else None,
                 "service": tx.service.name if tx.service else None,
-                "customer_name": tx.customer_name,
-                "status": tx.status,
+                "customer_name": getattr(tx, "customer_name", ""),
+                "reference": tx.reference,
+                "narration": tx.narration,
+                "created_at": tx.created_at.isoformat(),
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )

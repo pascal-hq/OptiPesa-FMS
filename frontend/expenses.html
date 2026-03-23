@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Expenses</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-left">
+      <h2>OptiPesa</h2>
+    </div>
+
+    <div class="nav-right">
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <aside class="sidebar">
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="sales.html">Record Sale</a></li>
+      <li><a href="transactions.html">Transactions</a></li>
+
+      <li class="admin-only"><a href="departments.html">Departments</a></li>
+      <li class="admin-only"><a href="employees.html">Employees</a></li>
+      <li class="admin-only"><a href="services.html">Services</a></li>
+      <li class="admin-only"><a href="expenses.html" class="active">Expenses</a></li>
+      <li class="admin-only"><a href="analytics.html">Analytics</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <h1>Expenses</h1>
+    <p id="message" class="msg"></p>
+
+    <section class="card">
+      <h3>Add Expense</h3>
+
+      <form id="expenseForm" class="form-grid">
+        <div>
+          <label for="department">Department</label>
+          <select id="department" required>
+            <option value="">Loading departments...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="expense_date">Expense Date</label>
+          <input id="expense_date" type="date" required />
+        </div>
+
+        <div>
+          <label for="amount">Amount (KES)</label>
+          <input id="amount" type="number" min="1" required placeholder="e.g. 2500" />
+        </div>
+
+        <div>
+          <label for="description">Description</label>
+          <input id="description" type="text" required placeholder="e.g. Electricity, towels, supplies" />
+        </div>
+
+        <div style="align-self:end;">
+          <button type="submit" class="primary">Save Expense</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Expense List</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th align="left">Date</th>
+            <th align="left">Department</th>
+            <th align="left">Amount</th>
+            <th align="left">Description</th>
+            <th align="left">Recorded By</th>
+          </tr>
+        </thead>
+        <tbody id="expenseBody">
+          <tr><td colspan="5">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/expenses.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Record Sale</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-left">
+      <h2>OptiPesa</h2>
+    </div>
+
+    <div class="nav-right">
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <aside class="sidebar">
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="sales.html" class="active">Record Sale</a></li>
+      <li><a href="transactions.html">Transactions</a></li>
+
+      <li class="admin-only"><a href="departments.html">Departments</a></li>
+      <li class="admin-only"><a href="employees.html">Employees</a></li>
+      <li class="admin-only"><a href="services.html">Services</a></li>
+      <li class="admin-only"><a href="expenses.html">Expenses</a></li>
+      <li class="admin-only"><a href="analytics.html">Analytics</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <h1>Record Sale</h1>
+
+    <form id="saleForm" class="card form-grid">
+      <div>
+        <label for="department">Department</label>
+        <select id="department" required>
+          <option value="">Loading departments...</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="employee">Employee</label>
+        <select id="employee">
+          <option value="">Select department first</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="service">Service</label>
+        <select id="service">
+          <option value="">Select department first</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="customerName">Customer Name (optional)</label>
+        <input id="customerName" type="text" placeholder="e.g. Jane Doe" />
+      </div>
+
+      <div>
+        <label for="amount">Amount (KES)</label>
+        <input id="amount" type="number" min="1" required placeholder="e.g. 1500" />
+      </div>
+
+      <div>
+        <label for="channel">Payment Channel</label>
+        <select id="channel">
+          <option value="internal">Cash / Internal</option>
+          <option value="mpesa">M-Pesa (simulation)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="reference">Reference (optional)</label>
+        <input id="reference" type="text" placeholder="e.g. MPESA CODE / receipt no" />
+      </div>
+
+      <div>
+        <label for="narration">Narration (optional)</label>
+        <input id="narration" type="text" placeholder="e.g. Haircut + wash" />
+      </div>
+
+      <div style="align-self:end;">
+        <button type="submit" class="primary">Submit Sale</button>
+      </div>
+
+      <div style="grid-column: 1 / -1;">
+        <p id="message" class="msg"></p>
+      </div>
+    </form>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/sales.js"></script>
+</body>
+</html>
