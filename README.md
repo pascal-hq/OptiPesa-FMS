@@ -120,17 +120,16 @@ Track outgoing business costs.
 Record Sale
 <img width="1894" height="750" alt="image" src="https://github.com/user-attachments/assets/35ede5a1-4fa8-42b4-afd3-db6a2dac0976" />
 Transactions
-Departments
 <img width="1875" height="905" alt="image" src="https://github.com/user-attachments/assets/d4456bdb-081e-409b-a627-1862b0a21cef" />
-Employees
+Departments
 <img width="1913" height="763" alt="image" src="https://github.com/user-attachments/assets/65f211f8-14c3-43ee-8c39-48cf3df0d6be" />
-Services
+Employees
 <img width="1881" height="937" alt="image" src="https://github.com/user-attachments/assets/c584c4f6-3aa1-4229-85b5-66c59534ec84" />
-Expenses
+Services
 <img width="1882" height="921" alt="image" src="https://github.com/user-attachments/assets/10a18127-0a04-4649-b426-a6b83331764b" />
-Analytics
+Expenses
 <img width="1871" height="910" alt="image" src="https://github.com/user-attachments/assets/9dda5ea7-b30e-47f0-a121-e9261337d618" />
-
+Analytics
 <img width="1878" height="893" alt="image" src="https://github.com/user-attachments/assets/a4f6a201-563a-4f76-8902-9a0e0109fe80" />
 ---
 🔮 Future Improvements
