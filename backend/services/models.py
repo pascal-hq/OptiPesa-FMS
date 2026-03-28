@@ -4,6 +4,7 @@ from departments.models import Department
 class Service(models.Model):
     department = models.ForeignKey(Department, on_delete=models.PROTECT, related_name="services")
     name = models.CharField(max_length=150)
+    description = models.TextField(blank=True)  # 👈 ADD THIS
     price = models.DecimalField(max_digits=12, decimal_places=2)
     duration_minutes = models.PositiveIntegerField(default=30)
     is_active = models.BooleanField(default=True)
