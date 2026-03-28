@@ -12,7 +12,6 @@
     <div class="nav-left">
       <h2>OptiPesa</h2>
     </div>
-
     <div class="nav-right">
       <button type="button" onclick="logout()">Logout</button>
     </div>
@@ -23,7 +22,6 @@
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="sales.html">Record Sale</a></li>
       <li><a href="transactions.html">Transactions</a></li>
-
       <li class="admin-only"><a href="departments.html">Departments</a></li>
       <li class="admin-only"><a href="employees.html">Employees</a></li>
       <li class="admin-only"><a href="services.html">Services</a></li>
@@ -38,20 +36,17 @@
 
     <section class="card">
       <h3>Filter by Date (Optional)</h3>
-
       <form id="filterForm" class="form-grid">
         <div>
           <label for="start_date">Start Date</label>
           <input type="date" id="start_date" />
         </div>
-
         <div>
           <label for="end_date">End Date</label>
           <input type="date" id="end_date" />
         </div>
-
-        <div style="align-self:end;">
-          <button type="submit">Apply</button>
+        <div style="align-self:end; display:flex; gap:10px;">
+          <button type="submit" class="primary">Apply</button>
           <button type="button" id="clearFiltersBtn">Clear</button>
         </div>
       </form>
@@ -59,7 +54,7 @@
 
     <section class="card">
       <h3>Overview</h3>
-      <div id="overviewCards" class="cards">
+      <div id="overviewCards" class="kpi-grid">
         <div>Loading...</div>
       </div>
     </section>
@@ -71,7 +66,7 @@
 
     <section class="card">
       <h3>Revenue by Department</h3>
-      <table>
+      <table class="table">
         <thead>
           <tr>
             <th align="left">Department</th>
@@ -87,7 +82,7 @@
 
     <section class="card">
       <h3>Revenue by Employee</h3>
-      <table>
+      <table class="table">
         <thead>
           <tr>
             <th align="left">Employee</th>
@@ -104,20 +99,20 @@
 
     <section class="card">
       <h3>Trends</h3>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button type="button" id="trendMonthBtn">Monthly</button>
-        <button type="button" id="trendDayBtn">Daily</button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+        <button type="button" id="trendMonthBtn" class="tab active">Monthly</button>
+        <button type="button" id="trendDayBtn" class="tab">Daily</button>
       </div>
 
-      <div style="margin-top:12px;">
-        <h4>Sales Trend</h4>
-        <pre id="salesTrend" style="white-space: pre-wrap;">Loading...</pre>
-      </div>
-
-      <div style="margin-top:12px;">
-        <h4>Expenses Trend</h4>
-        <pre id="expensesTrend" style="white-space: pre-wrap;">Loading...</pre>
+      <div class="chart-grid">
+        <div class="card">
+          <h3>Sales vs Expenses</h3>
+          <canvas id="trendChart"></canvas>
+        </div>
+        <div class="card">
+          <h3>Revenue by Department</h3>
+          <canvas id="deptChart"></canvas>
+        </div>
       </div>
     </section>
   </main>
@@ -125,6 +120,7 @@
   <script src="assets/js/api.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="assets/js/pages/analytics.js"></script>
 </body>
 </html>

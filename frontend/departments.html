@@ -12,7 +12,6 @@
     <div class="nav-left">
       <h2>OptiPesa</h2>
     </div>
-
     <div class="nav-right">
       <button type="button" onclick="logout()">Logout</button>
     </div>
@@ -23,7 +22,6 @@
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="sales.html">Record Sale</a></li>
       <li><a href="transactions.html">Transactions</a></li>
-
       <li class="admin-only"><a href="departments.html" class="active">Departments</a></li>
       <li class="admin-only"><a href="employees.html">Employees</a></li>
       <li class="admin-only"><a href="services.html">Services</a></li>
@@ -37,21 +35,19 @@
     <p id="message" class="msg"></p>
 
     <section class="card">
-      <h3>Add Department</h3>
-
+      <h3>Add / Edit Department</h3>
       <form id="deptForm" class="form-grid">
         <div>
           <label for="name">Department Name</label>
           <input id="name" type="text" placeholder="e.g. Salon, Spa, Barbershop" required />
         </div>
-
         <div>
           <label for="description">Description (optional)</label>
           <input id="description" type="text" placeholder="e.g. Hair styling & beauty services" />
         </div>
-
-        <div style="align-self:end;">
-          <button type="submit" class="primary">Save Department</button>
+        <div style="align-self:end; display:flex; gap:10px;">
+          <button type="submit" class="primary" id="submitBtn">Save Department</button>
+          <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
         </div>
       </form>
     </section>
@@ -59,17 +55,27 @@
     <section class="card">
       <h3>Department List</h3>
 
+      <div class="filter-row" style="margin-bottom:12px;">
+        <div class="filter-item">
+          <label for="deptSearch">Search</label>
+          <input id="deptSearch" type="text" placeholder="Search by name or description..." />
+        </div>
+      </div>
+
       <table>
         <thead>
           <tr>
             <th align="left">Name</th>
             <th align="left">Description</th>
+            <th>Edit</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody id="deptBody">
-          <tr><td colspan="2">Loading...</td></tr>
+          <tr><td colspan="4">Loading...</td></tr>
         </tbody>
       </table>
+      <div id="deptPagination"></div>
     </section>
   </main>
 

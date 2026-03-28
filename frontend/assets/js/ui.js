@@ -54,3 +54,87 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".admin-only").forEach(el => el.remove());
   }
 });
+/* ---- Pagination Helper ---- */
+function createPaginator(options) {
+  /*
+    options = {
+      containerEl,   // element to render pagination controls into
+      pageSize,      // records per page (default 20)
+      onPageChange,  // callback(pageData) called with current page's slice
+    }
+  */
+  let allData = [];
+  let currentPage = 1;
+  const pageSize = options.pageSize || 20;
+
+  function totalPages() {
+    return Math.max(1, Math.ceil(allData.length / pageSize));
+  }
+
+  function currentSlice() {
+    const start = (currentPage - 1) * pageSize;
+    return allData.slice(start, start + pageSize);
+  }
+
+  function render() {
+    options.onPageChange(currentSlice());
+
+    const total = totalPages();
+    const container = options.containerEl;
+    if (!container) return;
+
+    if (total <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="pagination">
+        <button class="pg-prev" ${currentPage === 1 ? "disabled" : ""}>← Prev</button>
+        <span class="pg-info">Page ${currentPage} of ${total} (${allData.length} records)</span>
+        <button class="pg-next" ${currentPage === total ? "disabled" : ""}>Next →</button>
+      </div>
+    `;
+
+    container.querySelector(".pg-prev").addEventListener("click", () => {
+      if (currentPage > 1) { currentPage--; render(); }
+    });
+
+    container.querySelector(".pg-next").addEventListener("click", () => {
+      if (currentPage < total) { currentPage++; render(); }
+    });
+  }
+
+  return {
+    setData(data) {
+      allData = data || [];
+      currentPage = 1;
+      render();
+    },
+    refresh() {
+      render();
+    },
+  };
+}
+
+/* ---- Search/Filter Helper ---- */
+function createSearchFilter(options) {
+  /*
+    options = {
+      inputEl,       // search input element
+      getData,       // function that returns the full array
+      filterFn,      // function(item, query) returns true/false
+      onFilter,      // callback(filteredData) — usually paginator.setData
+    }
+  */
+  function apply() {
+    const q = (options.inputEl.value || "").trim().toLowerCase();
+    const all = options.getData();
+    const filtered = q ? all.filter(item => options.filterFn(item, q)) : all;
+    options.onFilter(filtered);
+  }
+
+  options.inputEl.addEventListener("input", apply);
+
+  return { apply };
+}

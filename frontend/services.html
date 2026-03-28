@@ -12,7 +12,6 @@
     <div class="nav-left">
       <h2>OptiPesa</h2>
     </div>
-
     <div class="nav-right">
       <button type="button" onclick="logout()">Logout</button>
     </div>
@@ -23,7 +22,6 @@
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="sales.html">Record Sale</a></li>
       <li><a href="transactions.html">Transactions</a></li>
-
       <li class="admin-only"><a href="departments.html">Departments</a></li>
       <li class="admin-only"><a href="employees.html">Employees</a></li>
       <li class="admin-only"><a href="services.html" class="active">Services</a></li>
@@ -37,8 +35,7 @@
     <p id="message" class="msg"></p>
 
     <section class="card">
-      <h3>Add Service</h3>
-
+      <h3>Add / Edit Service</h3>
       <form id="serviceForm" class="form-grid">
         <div>
           <label for="department">Department</label>
@@ -46,35 +43,46 @@
             <option value="">Loading departments...</option>
           </select>
         </div>
-
         <div>
           <label for="name">Service Name</label>
           <input id="name" type="text" placeholder="e.g. Haircut, Massage, Facial" required />
         </div>
-
         <div>
           <label for="price">Price (KES)</label>
           <input id="price" type="number" step="0.01" placeholder="e.g. 500" required />
         </div>
-
         <div>
           <label for="description">Description (optional)</label>
           <input id="description" type="text" placeholder="e.g. 30 min haircut session" />
         </div>
-
         <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
           <input id="is_active" type="checkbox" checked />
           <label for="is_active" style="margin:0;">Active</label>
         </div>
-
-        <div style="align-self:end;">
-          <button type="submit" class="primary">Save Service</button>
+        <div style="align-self:end; display:flex; gap:10px;">
+          <button type="submit" class="primary" id="submitBtn">Save Service</button>
+          <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
         </div>
       </form>
     </section>
 
     <section class="card">
       <h3>Service List</h3>
+
+      <div class="filter-row" style="margin-bottom:12px;">
+        <div class="filter-item">
+          <label for="svcSearch">Search</label>
+          <input id="svcSearch" type="text" placeholder="Search by name, department..." />
+        </div>
+        <div class="filter-item">
+          <label for="svcStatusFilter">Status</label>
+          <select id="svcStatusFilter">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
 
       <table>
         <thead>
@@ -84,13 +92,15 @@
             <th align="left">Price</th>
             <th align="left">Status</th>
             <th align="left">Description</th>
+            <th>Edit</th>
+            <th>Delete</th>
           </tr>
         </thead>
-
         <tbody id="servicesBody">
-          <tr><td colspan="5">Loading...</td></tr>
+          <tr><td colspan="7">Loading...</td></tr>
         </tbody>
       </table>
+      <div id="servicesPagination"></div>
     </section>
   </main>
 

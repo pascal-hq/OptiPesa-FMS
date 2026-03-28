@@ -1,23 +1,25 @@
 requireAuth();
 
-console.log("✅ expenses.js loaded");
-
 const msg = document.getElementById("message");
 const deptSelect = document.getElementById("department");
 const body = document.getElementById("expenseBody");
 const form = document.getElementById("expenseForm");
+const submitBtn = document.getElementById("submitBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+const expensePaginationEl = document.getElementById("expensePagination");
+const expSearchEl = document.getElementById("expSearch");
+const expDeptFilterEl = document.getElementById("expDeptFilter");
+
+let editingId = null;
+let allExpenses = [];
 
 function unwrapList(data) {
-  // Supports: [] OR {results: []}
   return Array.isArray(data) ? data : (data && Array.isArray(data.results) ? data.results : []);
 }
 
 function todayISO() {
   const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
 function setPlaceholder(selectEl, text) {
@@ -30,93 +32,136 @@ function setPlaceholder(selectEl, text) {
 
 function fillDepartments(departments) {
   setPlaceholder(deptSelect, "Select department");
+  expDeptFilterEl.innerHTML = `<option value="all">All Departments</option>`;
+
   departments.forEach((d) => {
+    // Form select
     const opt = document.createElement("option");
     opt.value = d.id;
     opt.textContent = d.name;
     deptSelect.appendChild(opt);
+
+    // Filter select
+    const fopt = document.createElement("option");
+    fopt.value = d.id;
+    fopt.textContent = d.name;
+    expDeptFilterEl.appendChild(fopt);
   });
 }
 
-function renderExpenses(expenses) {
-  body.innerHTML = "";
+function setEditMode(exp) {
+  editingId = exp.id;
+  deptSelect.value = exp.department;
+  document.getElementById("expense_date").value = exp.expense_date;
+  document.getElementById("amount").value = exp.amount;
+  document.getElementById("description").value = exp.description;
+  submitBtn.textContent = "Update Expense";
+  cancelBtn.style.display = "inline-block";
+  document.getElementById("amount").focus();
+}
 
-  if (!expenses.length) {
-    body.innerHTML = `<tr><td colspan="5">No expenses recorded yet.</td></tr>`;
-    return;
-  }
+function resetForm() {
+  editingId = null;
+  form.reset();
+  document.getElementById("expense_date").value = todayISO();
+  submitBtn.textContent = "Save Expense";
+  cancelBtn.style.display = "none";
+}
 
-  expenses.forEach((e) => {
-    const deptName =
-      e.department_name ||
-      (e.department && e.department.name) ||
-      e.department?.name ||
-      e.department ||
-      "";
+function getFilteredExpenses() {
+  const q = (expSearchEl.value || "").trim().toLowerCase();
+  const deptId = expDeptFilterEl.value;
 
-    const recordedBy =
-      e.recorded_by_username ||
-      (e.recorded_by && e.recorded_by.username) ||
-      e.recorded_by?.username ||
-      e.recorded_by ||
-      "";
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.expense_date || ""}</td>
-      <td>${deptName}</td>
-      <td>${formatKES(e.amount)}</td>
-      <td>${e.description || ""}</td>
-      <td>${recordedBy}</td>
-    `;
-    body.appendChild(tr);
+  return allExpenses.filter(e => {
+    const deptOk = deptId === "all" ? true : String(e.department) === deptId;
+    if (!deptOk) return false;
+    if (!q) return true;
+    const hay = [
+      e.description,
+      e.department_name || String(e.department),
+      e.recorded_by_username || String(e.recorded_by),
+      e.expense_date,
+    ].join(" ").toLowerCase();
+    return hay.includes(q);
   });
 }
+
+function attachRowHandlers() {
+  body.querySelectorAll(".btn-edit").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = Number(btn.dataset.id);
+      const data = await apiRequest(`/api/expenses/${id}/`, "GET");
+      setEditMode(data);
+    });
+  });
+
+  body.querySelectorAll(".btn-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = Number(btn.dataset.id);
+      if (!confirm("Delete this expense? This cannot be undone.")) return;
+      try {
+        await apiRequest(`/api/expenses/${id}/`, "DELETE");
+        showMessage(msg, "✅ Expense deleted.", "success");
+        await loadExpenses();
+      } catch (err) {
+        showMessage(msg, "❌ " + err.message, "error");
+      }
+    });
+  });
+}
+
+const expensePaginator = createPaginator({
+  containerEl: expensePaginationEl,
+  pageSize: 20,
+  onPageChange(expenses) {
+    body.innerHTML = "";
+    if (!expenses.length) {
+      body.innerHTML = `<tr><td colspan="7">No expenses recorded yet.</td></tr>`;
+      return;
+    }
+    expenses.forEach((e) => {
+      const deptName = e.department_name || e.department || "";
+      const recordedBy = e.recorded_by_username || e.recorded_by || "";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${e.expense_date || ""}</td>
+        <td>${deptName}</td>
+        <td>${formatKES(e.amount)}</td>
+        <td>${e.description || ""}</td>
+        <td>${recordedBy}</td>
+        <td><button class="btn-edit" data-id="${e.id}">Edit</button></td>
+        <td><button class="btn-delete danger" data-id="${e.id}">Delete</button></td>
+      `;
+      body.appendChild(tr);
+    });
+    attachRowHandlers();
+  },
+});
+
+expSearchEl.addEventListener("input", () => {
+  expensePaginator.setData(getFilteredExpenses());
+});
+
+expDeptFilterEl.addEventListener("change", () => {
+  expensePaginator.setData(getFilteredExpenses());
+});
 
 async function loadDepartments() {
   setPlaceholder(deptSelect, "Loading departments...");
-
   const data = await apiRequest("/api/departments/", "GET");
   const departments = unwrapList(data);
-
-  console.log("Departments loaded:", departments);
-
   if (!departments.length) {
-    setPlaceholder(deptSelect, "No departments found (create in admin)");
-    return [];
+    setPlaceholder(deptSelect, "No departments found");
+    return;
   }
-
   fillDepartments(departments);
-  return departments;
 }
 
 async function loadExpenses() {
-  body.innerHTML = `<tr><td colspan="5">Loading...</td></tr>`;
-
+  body.innerHTML = `<tr><td colspan="7">Loading...</td></tr>`;
   const data = await apiRequest("/api/expenses/", "GET");
-  const expenses = unwrapList(data);
-
-  console.log("Expenses loaded:", expenses);
-
-  renderExpenses(expenses);
-  return expenses;
-}
-
-async function init() {
-  try {
-    showMessage(msg, "Loading expenses...", "success");
-
-    await loadDepartments();
-    await loadExpenses();
-
-    const dateEl = document.getElementById("expense_date");
-    dateEl.value = todayISO();
-
-    showMessage(msg, "", "success");
-  } catch (err) {
-    console.error(err);
-    showMessage(msg, "❌ " + err.message, "error");
-  }
+  allExpenses = unwrapList(data);
+  expensePaginator.setData(getFilteredExpenses());
 }
 
 form.addEventListener("submit", async (e) => {
@@ -129,25 +174,42 @@ form.addEventListener("submit", async (e) => {
     description: document.getElementById("description").value.trim(),
   };
 
-  if (!payload.department) {
-    showMessage(msg, "❌ Please select a department.", "error");
-    return;
-  }
+  if (!payload.department) { showMessage(msg, "❌ Please select a department.", "error"); return; }
+  if (!payload.expense_date) { showMessage(msg, "❌ Please select a date.", "error"); return; }
+  if (!payload.amount || payload.amount <= 0) { showMessage(msg, "❌ Amount must be greater than 0.", "error"); return; }
+  if (!payload.description) { showMessage(msg, "❌ Description is required.", "error"); return; }
 
   try {
-    showMessage(msg, "Saving expense...", "success");
-
-    await apiRequest("/api/expenses/", "POST", payload);
-
-    showMessage(msg, "✅ Expense saved.", "success");
-    form.reset();
-    document.getElementById("expense_date").value = todayISO();
-
+    showMessage(msg, "Saving...", "success");
+    if (editingId) {
+      await apiRequest(`/api/expenses/${editingId}/`, "PATCH", payload);
+      showMessage(msg, "✅ Expense updated.", "success");
+    } else {
+      await apiRequest("/api/expenses/", "POST", payload);
+      showMessage(msg, "✅ Expense saved.", "success");
+    }
+    resetForm();
     await loadExpenses();
   } catch (err) {
-    console.error(err);
     showMessage(msg, "❌ " + err.message, "error");
   }
 });
+
+cancelBtn.addEventListener("click", () => {
+  resetForm();
+  showMessage(msg, "", "success");
+});
+
+async function init() {
+  try {
+    showMessage(msg, "Loading expenses...", "success");
+    await loadDepartments();
+    await loadExpenses();
+    document.getElementById("expense_date").value = todayISO();
+    showMessage(msg, "", "success");
+  } catch (err) {
+    showMessage(msg, "❌ " + err.message, "error");
+  }
+}
 
 init();

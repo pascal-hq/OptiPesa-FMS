@@ -9,10 +9,7 @@
 
 <body>
   <nav class="nav">
-    <div class="nav-left">
-      <h2>OptiPesa</h2>
-    </div>
-
+    <div class="nav-left"><h2>OptiPesa</h2></div>
     <div class="nav-right">
       <button type="button" onclick="logout()">Logout</button>
     </div>
@@ -23,7 +20,6 @@
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="sales.html">Record Sale</a></li>
       <li><a href="transactions.html">Transactions</a></li>
-
       <li class="admin-only"><a href="departments.html">Departments</a></li>
       <li class="admin-only"><a href="employees.html" class="active">Employees</a></li>
       <li class="admin-only"><a href="services.html">Services</a></li>
@@ -37,8 +33,7 @@
     <p id="message" class="msg"></p>
 
     <section class="card">
-      <h3>Add Employee</h3>
-
+      <h3>Add / Edit Employee</h3>
       <form id="employeeForm" class="form-grid">
         <div>
           <label for="department">Department</label>
@@ -46,40 +41,50 @@
             <option value="">Loading departments...</option>
           </select>
         </div>
-
         <div>
           <label for="full_name">Full Name</label>
           <input id="full_name" type="text" placeholder="e.g. Jane Wambui" required />
         </div>
-
         <div>
           <label for="phone">Phone (optional)</label>
           <input id="phone" type="text" placeholder="e.g. 07xx..." />
         </div>
-
         <div>
           <label for="email">Email (optional)</label>
           <input id="email" type="email" placeholder="e.g. jane@email.com" />
         </div>
-
         <div>
           <label for="hired_at">Hired Date (optional)</label>
           <input id="hired_at" type="date" />
         </div>
-
         <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
           <input id="is_active" type="checkbox" checked />
           <label for="is_active" style="margin:0;">Active</label>
         </div>
-
-        <div style="align-self:end;">
-          <button type="submit" class="primary">Save Employee</button>
+        <div style="align-self:end; display:flex; gap:10px;">
+          <button type="submit" class="primary" id="submitBtn">Save Employee</button>
+          <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
         </div>
       </form>
     </section>
 
     <section class="card">
       <h3>Employee List</h3>
+
+      <div class="filter-row" style="margin-bottom:12px;">
+        <div class="filter-item">
+          <label for="empSearch">Search</label>
+          <input id="empSearch" type="text" placeholder="Search by name, department, phone, email..." />
+        </div>
+        <div class="filter-item">
+          <label for="empStatusFilter">Status</label>
+          <select id="empStatusFilter">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
 
       <table>
         <thead>
@@ -90,12 +95,15 @@
             <th align="left">Email</th>
             <th align="left">Status</th>
             <th align="left">Hired</th>
+            <th>Edit</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody id="employeesBody">
-          <tr><td colspan="6">Loading...</td></tr>
+          <tr><td colspan="8">Loading...</td></tr>
         </tbody>
       </table>
+      <div id="employeePagination"></div>
     </section>
   </main>
 
