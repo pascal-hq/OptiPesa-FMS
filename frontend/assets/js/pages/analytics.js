@@ -12,12 +12,15 @@ const endDateEl = document.getElementById("end_date");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 
 const trendMonthBtn = document.getElementById("trendMonthBtn");
+const trendWeekBtn = document.getElementById("trendWeekBtn");
 const trendDayBtn = document.getElementById("trendDayBtn");
 
 const trendChartCanvas = document.getElementById("trendChart");
 const deptChartCanvas = document.getElementById("deptChart");
 
-let currentPeriod = "month";
+
+
+let currentPeriod = "week";
 let trendChart = null;
 let deptChart = null;
 
@@ -242,6 +245,7 @@ function renderDeptChart(rows) {
 
 function setActivePeriodBtn(period) {
   trendMonthBtn.classList.toggle("active", period === "month");
+  trendWeekBtn.classList.toggle("active", period === "week");
   trendDayBtn.classList.toggle("active", period === "day");
 }
 
@@ -287,7 +291,10 @@ trendMonthBtn.addEventListener("click", () => {
   currentPeriod = "month";
   loadAnalytics();
 });
-
+trendWeekBtn.addEventListener("click", () => {
+  currentPeriod = "week";
+  loadAnalytics();
+});
 trendDayBtn.addEventListener("click", () => {
   currentPeriod = "day";
   loadAnalytics();

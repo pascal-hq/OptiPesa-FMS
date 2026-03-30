@@ -218,7 +218,7 @@ async function loadTrendChart() {
   if (!IS_ADMIN_MANAGER || !trendChartCanvas || typeof Chart === "undefined") return;
 
   try {
-    const data = await apiRequest("/api/analytics/trends/?period=month", "GET");
+    const data = await apiRequest("/api/analytics/trends/?period=week", "GET");
     const salesTrend = Array.isArray(data.sales_trend) ? data.sales_trend : [];
     const expensesTrend = Array.isArray(data.expenses_trend) ? data.expenses_trend : [];
 
