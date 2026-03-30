@@ -17,7 +17,7 @@ def get_mpesa_access_token():
     consumer_key = settings.MPESA_CONSUMER_KEY
     consumer_secret = settings.MPESA_CONSUMER_SECRET
 
-    response = requests.get(url, auth=(consumer_key, consumer_secret))
+    response = requests.get(url, auth=(consumer_key, consumer_secret), timeout=60)
     response.raise_for_status()
     data = response.json()
     return data["access_token"]
@@ -57,14 +57,14 @@ def initiate_stk_push(phone_number: str, amount: int, account_reference: str = "
         "Timestamp": timestamp,
         "TransactionType": "CustomerPayBillOnline",
         "Amount": int(amount),
-        "PartyA": phone_number,              # Customer phone
-        "PartyB": settings.MPESA_SHORTCODE,  # Till/Paybill
+        "PartyA": phone_number,
+        "PartyB": settings.MPESA_SHORTCODE,
         "PhoneNumber": phone_number,
         "CallBackURL": settings.MPESA_STK_PUSH_CALLBACK_URL,
         "AccountReference": account_reference,
         "TransactionDesc": description,
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers, timeout=60)
     response.raise_for_status()
     return response.json()

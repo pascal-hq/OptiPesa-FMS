@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-l#hgh%5c+7#p2%o13i(e8wp%g97gg!!vq!6e5)&r@!e7o=k$ee
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS =  [
+    "localhost",
+    "127.0.0.1",
+    "musicianly-agustin-swampy.ngrok-free.dev",
+]
 
 
 # Application definition
@@ -152,15 +156,13 @@ REST_FRAMEWORK = {
 
 
 AUTH_USER_MODEL = 'users.User'
+
 from decouple import config
 
 # M-Pesa (Daraja) Settings - SANDBOX
-MPESA_ENV = "sandbox"  # or "production"
-
-MPESA_CONSUMER_KEY = "YOUR_SANDBOX_CONSUMER_KEY"
-MPESA_CONSUMER_SECRET = "YOUR_SANDBOX_CONSUMER_SECRET"
-
-MPESA_SHORTCODE = "174379"  # default test shortcode
-MPESA_PASSKEY = "YOUR_SANDBOX_PASSKEY"
-
-MPESA_STK_PUSH_CALLBACK_URL = "https://example.com/api/mpesa/callback/"  # replace later with real public URL
+MPESA_ENV = config("MPESA_ENV", default="sandbox")
+MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY")
+MPESA_CONSUMER_SECRET = config("MPESA_CONSUMER_SECRET")
+MPESA_SHORTCODE = config("MPESA_SHORTCODE", default="174379")
+MPESA_PASSKEY = config("MPESA_PASSKEY")
+MPESA_STK_PUSH_CALLBACK_URL = config("MPESA_STK_PUSH_CALLBACK_URL")

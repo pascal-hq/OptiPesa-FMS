@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.db.models import Sum, Count
-from django.db.models.functions import TruncMonth, TruncDay
+from django.db.models.functions import TruncMonth, TruncDay, TruncWeek
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -98,7 +98,7 @@ class AnalyticsTrendsAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        period = request.query_params.get("period", "month")  # "day" or "month"
+        period = request.query_params.get("period", "week")  # "day", "week", or "month"
 
         sales_qs = Transaction.objects.filter(tx_type="sale", status="successful")
         expenses_qs = Expense.objects.all()
@@ -112,6 +112,19 @@ class AnalyticsTrendsAPIView(APIView):
             )
             exp_group = (
                 expenses_qs.annotate(p=TruncDay("expense_date"))
+                .values("p")
+                .annotate(total=Sum("amount"))
+                .order_by("p")
+            )
+        elif period == "week":
+            sales_group = (
+                sales_qs.annotate(p=TruncWeek("created_at"))
+                .values("p")
+                .annotate(total=Sum("amount"))
+                .order_by("p")
+            )
+            exp_group = (
+                expenses_qs.annotate(p=TruncWeek("expense_date"))
                 .values("p")
                 .annotate(total=Sum("amount"))
                 .order_by("p")
@@ -130,8 +143,19 @@ class AnalyticsTrendsAPIView(APIView):
                 .order_by("p")
             )
 
-        sales_data = [{"period": str(x["p"]), "total": str(x["total"])} for x in sales_group]
-        exp_data = [{"period": str(x["p"]), "total": str(x["total"])} for x in exp_group]
+        def fmt_period(p):
+            if hasattr(p, "strftime"):
+                if period == "month":
+                    return p.strftime("%Y-%m")
+                else:
+                    # For day and week show full date
+                    return p.strftime("%Y-%m-%d")
+            if period == "month":
+                return str(p)[:7]
+            return str(p)[:10]
+
+        sales_data = [{"period": fmt_period(x["p"]), "total": str(x["total"])} for x in sales_group]
+        exp_data = [{"period": fmt_period(x["p"]), "total": str(x["total"])} for x in exp_group]
 
         return Response(
             {"period": period, "sales_trend": sales_data, "expenses_trend": exp_data},
