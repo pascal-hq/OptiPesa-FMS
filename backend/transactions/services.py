@@ -101,22 +101,26 @@ def create_sale(receiver, amount, department=None, employee=None, service=None,
     if amount <= 0:
         raise ValidationError("Sale amount must be greater than 0.")
 
-    # Optional consistency checks
     if service and department and service.department_id != department.id:
         raise ValidationError("Service does not belong to the selected department.")
 
     if employee and department and employee.department_id != department.id:
         raise ValidationError("Employee does not belong to the selected department.")
 
-    # Credit the receiver (business wallet)
-    receiver_account = _get_account_for_user(receiver)
-    receiver_account.balance += amount
-    receiver_account.save()
+    # For M-Pesa, start as pending — callback will update to successful
+    # For cash/internal, mark as successful immediately
+    tx_status = "pending" if channel == "mpesa" else "successful"
+
+    # Only credit wallet immediately for non-mpesa payments
+    if channel != "mpesa":
+        receiver_account = _get_account_for_user(receiver)
+        receiver_account.balance += amount
+        receiver_account.save()
 
     tx = Transaction.objects.create(
         tx_type="sale",
         channel=channel,
-        status="successful",
+        status=tx_status,
         sender=None,
         receiver=receiver,
         department=department,

@@ -62,13 +62,13 @@ function attachRowHandlers() {
     });
   });
 
-  employeesBody.querySelectorAll(".btn-delete").forEach((btn) => {
+  employeesBody.querySelectorAll(".btn-de-activate").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = Number(btn.dataset.id);
-      if (!confirm("Delete this employee? If they have transactions, they will be marked Inactive instead.")) return;
+      if (!confirm("De-activate this employee? If they have transactions, they will be marked Inactive instead.")) return;
       try {
-        await apiRequest(`/api/employees/${id}/`, "DELETE");
-        showMessage(msg, "✅ Employee deleted.", "success");
+        await apiRequest(`/api/employees/${id}/`, "DE-ACTIVATE");
+        showMessage(msg, "✅ Employee de-activated.", "success");
       } catch (err) {
         try {
           await apiRequest(`/api/employees/${id}/`, "PATCH", { is_active: false });
@@ -101,7 +101,7 @@ const employeePaginator = createPaginator({
         <td>${e.is_active ? "Active" : "Inactive"}</td>
         <td>${safe(e.hired_at)}</td>
         <td><button class="btn-edit" data-id="${e.id}">Edit</button></td>
-        <td><button class="btn-delete danger" data-id="${e.id}">Delete</button></td>
+        <td><button class="btn-delete danger" data-id="${e.id}">De-activate</button></td>
       `;
       employeesBody.appendChild(tr);
     });
