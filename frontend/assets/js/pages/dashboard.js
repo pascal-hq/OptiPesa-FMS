@@ -17,6 +17,12 @@ const topPerformersEl = document.getElementById("topPerformers");
 const trendChartCanvas = document.getElementById("trendChart");
 const departmentChartCanvas = document.getElementById("departmentChart");
 
+const startDateEl = document.getElementById("dashStartDate");
+const endDateEl = document.getElementById("dashEndDate");
+const applyDateBtn = document.getElementById("applyDateBtn");
+const clearDateBtn = document.getElementById("clearDateBtn");
+const alertContainer = document.getElementById("alertContainer");
+
 let IS_ADMIN_MANAGER = false;
 let CURRENT_USER = null;
 let POLL_TIMER = null;
@@ -60,6 +66,7 @@ function monthPrefix() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
 }
 
+
 async function loadRoleAndApplyUI() {
   try {
     const me = await apiRequest("/api/me/", "GET");
@@ -85,6 +92,22 @@ async function loadRoleAndApplyUI() {
     }
   } catch (err) {
     welcomeText.textContent = "Welcome";
+  }
+}
+
+function showExpenseAlert(totalExpenses) {
+  if (!alertContainer) return;
+  const threshold = localStorage.getItem("expenseThreshold");
+  if (!threshold) return;
+  const alert = checkExpenseAlert(totalExpenses, Number(threshold));
+  if (alert) {
+    alertContainer.innerHTML = `
+      <div class="alert-banner ${alert.type}">
+        ${alert.message}
+      </div>
+    `;
+  } else {
+    alertContainer.innerHTML = "";
   }
 }
 
@@ -160,14 +183,31 @@ async function loadDashboard() {
       const exp = await apiRequest("/api/expenses/", "GET");
       const expList = Array.isArray(exp) ? exp : [];
 
-      const todayExpenses = expList
+  // Apply date filter if set
+      let filteredExp = expList;
+      if (startDateEl && startDateEl.value) {
+         filteredExp = filteredExp.filter(e => e.expense_date >= startDateEl.value);
+      }
+      if (endDateEl && endDateEl.value) {
+         filteredExp = filteredExp.filter(e => e.expense_date <= endDateEl.value);
+      }
+
+      const todayExpenses = filteredExp
         .filter((e) => safeText(e.expense_date) === tKey)
+        .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+      const totalMonthExpenses = filteredExp
+        .filter((e) => safeText(e.expense_date).slice(0, 7) === mKey)
         .reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
       kpiTodayExpenses.textContent = formatKES(todayExpenses);
       kpiTodayNet.textContent = formatKES(todaySales - todayExpenses);
 
-      const recentExp = expList
+  // Show expense alert
+      showExpenseAlert(totalMonthExpenses);
+
+  // Recent expenses table
+      const recentExp = filteredExp
         .slice()
         .sort((a, b) => safeText(b.expense_date).localeCompare(safeText(a.expense_date)))
         .slice(0, 10);
@@ -182,31 +222,10 @@ async function loadDashboard() {
             <td><strong>${formatKES(e.amount)}</strong></td>
             <td>${safeText(e.description) || "—"}</td>
             <td>${safeText(e.recorded_by_username || e.recorded_by) || "—"}</td>
-          </tr>
-        `).join("");
+         </tr>
+       `).join("");
       }
-
-      try {
-        const perf = await apiRequest("/api/analytics/performance/", "GET");
-        const bestDept = perf.best_department;
-        const bestEmp = perf.best_employee;
-
-        topPerformersEl.innerHTML = `
-          <div class="stack">
-            <div class="pill">
-              🏆 Best Department: <strong>${bestDept ? bestDept["department__name"] : "—"}</strong>
-              ${bestDept ? `(${formatKES(bestDept.revenue)})` : ""}
-            </div>
-            <div class="pill">
-              ⭐ Best Employee: <strong>${bestEmp ? bestEmp["employee__full_name"] : "—"}</strong>
-              ${bestEmp ? `(${formatKES(bestEmp.revenue)})` : ""}
-            </div>
-          </div>
-        `;
-      } catch {
-        topPerformersEl.textContent = "Top performers unavailable.";
-      }
-    }
+  }
 
     showMessage(msg, "", "success");
   } catch (err) {
@@ -385,3 +404,14 @@ document.addEventListener("visibilitychange", async () => {
   await refreshAll();
   startPolling();
 })();
+
+if (applyDateBtn) {
+  applyDateBtn.addEventListener("click", () => refreshAll());
+}
+if (clearDateBtn) {
+  clearDateBtn.addEventListener("click", () => {
+    if (startDateEl) startDateEl.value = "";
+    if (endDateEl) endDateEl.value = "";
+    refreshAll();
+  });
+}

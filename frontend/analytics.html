@@ -13,6 +13,7 @@
       <h2>OptiPesa</h2>
     </div>
     <div class="nav-right">
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
       <button type="button" onclick="logout()">Logout</button>
     </div>
   </nav>
@@ -28,13 +29,20 @@
       <li class="admin-only"><a href="expenses.html">Expenses</a></li>
       <li class="admin-only"><a href="analytics.html" class="active">Analytics</a></li>
       <li class="admin-only"><a href="users.html">Users</a></li>
-<li><a href="change_password.html">Change Password</a></li>
+      <li><a href="change_password.html">Change Password</a></li>
+      <li class="admin-only"><a href="settings.html">Settings</a></li>
     </ul>
   </aside>
 
   <main class="main-content">
-    <h1>Analytics</h1>
-    <p id="message" class="msg"></p>
+    <div class="page-head">
+      <div>
+        <h1>Analytics</h1>
+      </div>
+      <div class="page-actions no-print">
+        <button onclick="window.print()" type="button">🖨️ Print Report</button>
+      </div>
+    </div>
 
     <section class="card">
       <h3>Filter by Date (Optional)</h3>

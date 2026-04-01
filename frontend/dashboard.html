@@ -14,8 +14,9 @@
     </div>
 
     <div class="nav-right">
-      <button type="button" onclick="logout()">Logout</button>
-    </div>
+  <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+  <button type="button" onclick="logout()">Logout</button>
+</div>
   </nav>
 
   <aside class="sidebar">
@@ -31,6 +32,7 @@
       <li class="admin-only"><a href="analytics.html">Analytics</a></li>
       <li class="admin-only"><a href="users.html">Users</a></li>
       <li><a href="change_password.html">Change Password</a></li>
+      <li class="admin-only"><a href="settings.html">Settings</a></li>
     </ul>
   </aside>
 
@@ -46,11 +48,33 @@
         <a href="sales.html">
           <button class="primary" type="button">Record Sale</button>
         </a>
+        <button onclick="window.print()" type="button" class="no-print">🖨️ Print</button>
         <button id="refreshBtn" type="button">Refresh</button>
       </div>
     </div>
 
     <p id="message" class="msg"></p>
+    <!-- Alert Container -->
+<div id="alertContainer"></div>
+
+<!-- Date Filter -->
+<section class="card admin-only">
+  <h3>Filter by Date</h3>
+  <div class="form-grid">
+    <div>
+      <label for="dashStartDate">Start Date</label>
+      <input type="date" id="dashStartDate" />
+    </div>
+    <div>
+      <label for="dashEndDate">End Date</label>
+      <input type="date" id="dashEndDate" />
+    </div>
+    <div style="align-self:end; display:flex; gap:10px;">
+      <button id="applyDateBtn" class="primary">Apply</button>
+      <button id="clearDateBtn">Clear</button>
+    </div>
+  </div>
+</section>
 
     <section class="card">
       <h3>Key Metrics</h3>

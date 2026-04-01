@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Receipt</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav no-print">
+    <div class="nav-left"><h2>OptiPesa</h2></div>
+    <div class="nav-right">
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">🌙</button>
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <main style="padding: 100px 20px 40px; max-width: 500px; margin: 0 auto;">
+    <div id="receiptContainer">
+      <p>Loading receipt...</p>
+    </div>
+
+    <div class="receipt-actions no-print" id="receiptActions" style="display:none;">
+      <button class="primary" onclick="window.print()">🖨️ Print Receipt</button>
+      <button onclick="window.history.back()">← Back</button>
+    </div>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/receipt.js"></script>
+</body>
+</html>

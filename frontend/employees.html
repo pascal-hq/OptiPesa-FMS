@@ -5,14 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OptiPesa | Employees</title>
   <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
   <nav class="nav">
     <div class="nav-left"><h2>OptiPesa</h2></div>
     <div class="nav-right">
-      <button type="button" onclick="logout()">Logout</button>
-    </div>
+  <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+  <button type="button" onclick="logout()">Logout</button>
+</div>
   </nav>
 
   <aside class="sidebar">
@@ -27,6 +29,7 @@
       <li class="admin-only"><a href="analytics.html">Analytics</a></li>
       <li class="admin-only"><a href="users.html">Users</a></li>
       <li><a href="change_password.html">Change Password</a></li>
+      <li class="admin-only"><a href="settings.html">Settings</a></li>
     </ul>
   </aside>
 
@@ -72,6 +75,10 @@
 
     <section class="card">
       <h3>Employee List</h3>
+      // Action buttons
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+        <button id="downloadBtn" type="button">⬇ Excel</button>
+      </div>
 
       <div class="filter-row" style="margin-bottom:12px;">
         <div class="filter-item">

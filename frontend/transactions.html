@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OptiPesa | Transactions</title>
   <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -14,8 +15,9 @@
     </div>
 
     <div class="nav-right">
-      <button type="button" onclick="logout()">Logout</button>
-    </div>
+  <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+  <button type="button" onclick="logout()">Logout</button>
+</div>
   </nav>
 
   <aside class="sidebar">
@@ -31,6 +33,7 @@
       <li class="admin-only"><a href="analytics.html">Analytics</a></li>
       <li class="admin-only"><a href="users.html">Users</a></li>
       <li><a href="change_password.html">Change Password</a></li>
+      <li class="admin-only"><a href="settings.html">Settings</a></li>
     </ul>
   </aside>
 
@@ -42,6 +45,8 @@
       </div>
 
       <div class="page-actions">
+        <button id="downloadBtn" type="button">⬇ Excel</button>
+        <button onclick="window.print()" type="button" class="no-print">🖨️ Print</button>
         <button id="refreshBtn" type="button">Refresh</button>
       </div>
     </div>
@@ -117,6 +122,7 @@
         <th>Sender</th>
         <th>Receiver</th>
         <th>Narration</th>
+        <th>Receipt</th>
       </tr>
     </thead>
     <tbody id="txBody">

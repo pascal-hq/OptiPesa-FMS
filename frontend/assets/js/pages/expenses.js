@@ -212,4 +212,18 @@ async function init() {
   }
 }
 
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  downloadExcel(
+    allExpenses,
+    "expenses",
+    [
+      { key: "expense_date", label: "Date" },
+      { key: "department_name", label: "Department" },
+      { key: "amount", label: "Amount (KES)" },
+      { key: "description", label: "Description" },
+      { key: "recorded_by_username", label: "Recorded By" },
+    ]
+  );
+});
+
 init();

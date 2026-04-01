@@ -46,7 +46,7 @@ const txPaginator = createPaginator({
   pageSize: 20,
   onPageChange(rows) {
     if (!rows.length) {
-      txBody.innerHTML = `<tr><td colspan="8">No transactions match your filters.</td></tr>`;
+      txBody.innerHTML = `<tr><td colspan="9">No transactions match your filters.</td></tr>`;
       return;
     }
     txBody.innerHTML = rows.map(t => {
@@ -61,6 +61,11 @@ const txPaginator = createPaginator({
           <td>${safeText(t.sender) || "—"}</td>
           <td>${safeText(t.receiver) || "—"}</td>
           <td>${safeText(t.narration) || "—"}</td>
+          <td>
+            <a href="receipt.html?id=${t.id}">
+              <button type="button">🧾</button>
+            </a>
+          </td>
         </tr>
       `;
     }).join("");
@@ -171,3 +176,25 @@ document.addEventListener("visibilitychange", () => {
 
 loadTransactions();
 startPolling();
+
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  downloadExcel(
+    ALL_TX,
+    "transactions",
+    [
+      { key: "created_at", label: "Date" },
+      { key: "tx_type", label: "Type" },
+      { key: "channel", label: "Channel" },
+      { key: "status", label: "Status" },
+      { key: "amount", label: "Amount (KES)" },
+      { key: "sender", label: "Sender" },
+      { key: "receiver", label: "Receiver" },
+      { key: "department", label: "Department" },
+      { key: "employee", label: "Employee" },
+      { key: "service", label: "Service" },
+      { key: "customer_name", label: "Customer" },
+      { key: "narration", label: "Narration" },
+      { key: "reference", label: "Reference" },
+    ]
+  );
+});

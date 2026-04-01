@@ -10,6 +10,14 @@ from users.views import (
     UserDetailAPIView,
     ChangePasswordAPIView
 )
+from transactions.views import (
+    DepositAPIView,
+    TransferAPIView,
+    WithdrawAPIView,
+    TransactionHistoryAPIView,
+    SaleAPIView,
+    TransactionReceiptAPIView,
+)
 
 router = DefaultRouter()
 router.register(r"departments", DepartmentViewSet, basename="departments")
@@ -22,4 +30,5 @@ urlpatterns = router.urls + [
     path("users/", UserListCreateAPIView.as_view(), name="users"),
     path("users/<int:pk>/", UserDetailAPIView.as_view(), name="user-detail"),
     path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
+    path("transactions/receipt/<int:pk>/", TransactionReceiptAPIView.as_view(), name="transaction-receipt"),
 ]

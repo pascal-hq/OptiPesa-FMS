@@ -200,3 +200,18 @@ cancelBtn.addEventListener("click", () => {
     showMessage(msg, "❌ " + err.message, "error");
   }
 })();
+
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  downloadExcel(
+    allEmployees,
+    "employees",
+    [
+      { key: "full_name", label: "Full Name" },
+      { key: "department_name", label: "Department" },
+      { key: "phone", label: "Phone" },
+      { key: "email", label: "Email" },
+      { key: "is_active", label: "Active" },
+      { key: "hired_at", label: "Hired Date" },
+    ]
+  );
+});

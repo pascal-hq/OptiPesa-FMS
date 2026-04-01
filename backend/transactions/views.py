@@ -258,3 +258,37 @@ class SaleAPIView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+class TransactionReceiptAPIView(APIView):
+    """
+    Returns a single transaction's details for receipt printing.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            tx = Transaction.objects.select_related(
+                "sender", "receiver", "department", "employee", "service"
+            ).get(pk=pk)
+        except Transaction.DoesNotExist:
+            return Response(
+                {"detail": "Transaction not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response({
+            "id": tx.id,
+            "tx_type": tx.tx_type,
+            "channel": tx.channel,
+            "status": tx.status,
+            "amount": str(tx.amount),
+            "department": tx.department.name if tx.department else None,
+            "employee": tx.employee.full_name if tx.employee else None,
+            "service": tx.service.name if tx.service else None,
+            "customer_name": tx.customer_name,
+            "reference": tx.reference,
+            "narration": tx.narration,
+            "sender": tx.sender.username if tx.sender else None,
+            "receiver": tx.receiver.username if tx.receiver else None,
+            "created_at": tx.created_at.isoformat(),
+        })

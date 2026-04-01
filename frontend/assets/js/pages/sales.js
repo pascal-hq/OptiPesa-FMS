@@ -157,7 +157,7 @@ form.addEventListener("submit", async (e) => {
 
     showMessage(
       msg,
-      `Sale recorded. Transaction ID: ${res.transaction_id} | Status: ${res.status}`,
+      `✅ Sale recorded. <a href="receipt.html?id=${res.transaction_id}" target="_blank">View Receipt 🧾</a>`,
       "success"
     );
 
