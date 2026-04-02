@@ -32,3 +32,14 @@ urlpatterns = router.urls + [
     path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
     path("transactions/receipt/<int:pk>/", TransactionReceiptAPIView.as_view(), name="transaction-receipt"),
 ]
+
+from accounts.views import AccountActivityAPIView
+
+urlpatterns = router.urls + [
+    path("me/", MeAPIView.as_view(), name="me"),
+    path("users/", UserListCreateAPIView.as_view(), name="users"),
+    path("users/<int:pk>/", UserDetailAPIView.as_view(), name="user-detail"),
+    path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
+    path("transactions/receipt/<int:pk>/", TransactionReceiptAPIView.as_view(), name="transaction-receipt"),
+    path("accounts/activity/", AccountActivityAPIView.as_view(), name="account-activity"),
+]

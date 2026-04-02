@@ -4,23 +4,46 @@ function isAdminLike(user) {
   return user.is_superuser || role === "admin" || role === "manager";
 }
 
+function isAdmin(user) {
+  if (!user) return false;
+  const role = (user.role || "").toLowerCase();
+  return user.is_superuser || role === "admin";
+}
+
 function applyRoleNav() {
   const user = getCurrentUser();
   const adminLike = isAdminLike(user);
+  const admin = isAdmin(user);
 
-  // Hide admin-only links for staff
-  const adminOnlySelectors = [
+  // Hide admin+manager links from staff
+  const adminManagerSelectors = [
     'a[href="dashboard.html"]',
-    'a[href="departments.html"]',
     'a[href="employees.html"]',
-    'a[href="services.html"]',
     'a[href="expenses.html"]',
     'a[href="analytics.html"]',
   ];
 
-  adminOnlySelectors.forEach((sel) => {
+  adminManagerSelectors.forEach((sel) => {
     const link = document.querySelector(sel);
     if (link && !adminLike) {
+      const li = link.closest("li");
+      if (li) li.style.display = "none";
+      else link.style.display = "none";
+    }
+  });
+
+  // Hide admin-only links from managers and staff
+  const adminOnlySelectors = [
+    'a[href="departments.html"]',
+    'a[href="services.html"]',
+    'a[href="users.html"]',
+    'a[href="settings.html"]',
+    'a[href="accounts.html"]',
+  ];
+
+  adminOnlySelectors.forEach((sel) => {
+    const link = document.querySelector(sel);
+    if (link && !admin) {
       const li = link.closest("li");
       if (li) li.style.display = "none";
       else link.style.display = "none";
@@ -32,28 +55,39 @@ function guardPage() {
   requireAuth();
   const user = getCurrentUser();
   const adminLike = isAdminLike(user);
-
+  const admin = isAdmin(user);
   const path = (window.location.pathname || "").toLowerCase();
 
-  // pages staff should not access
-  const adminPages = [
+  // Pages only admin+manager can access
+  const adminManagerPages = [
     "dashboard.html",
-    "departments.html",
     "employees.html",
-    "services.html",
     "expenses.html",
     "analytics.html",
   ];
 
-  const isAdminPage = adminPages.some((p) => path.endsWith(p));
+  // Pages only admin can access
+  const adminOnlyPages = [
+    "departments.html",
+    "services.html",
+    "users.html",
+    "settings.html",
+    "accounts.html",
+  ];
 
-  if (isAdminPage && !adminLike) {
+  const isAdminManagerPage = adminManagerPages.some((p) => path.endsWith(p));
+  const isAdminOnlyPage = adminOnlyPages.some((p) => path.endsWith(p));
+
+  if (isAdminManagerPage && !adminLike) {
+    window.location.href = "sales.html";
+  }
+
+  if (isAdminOnlyPage && !admin) {
     window.location.href = "sales.html";
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // apply nav + guard only on pages that have sidebar
   applyRoleNav();
   guardPage();
 });
