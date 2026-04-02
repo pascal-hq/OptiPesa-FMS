@@ -674,3 +674,107 @@ body.dark-mode .pagination button {
 @media (max-width: 700px) {
   .settings-grid { grid-template-columns: 1fr; }
 }
+/* ===================== */
+/* Mobile Sidebar        */
+/* ===================== */
+
+/* Overlay behind sidebar on mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 8;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* Mobile toggle button - hidden on desktop */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+
+  /* Show toggle button */
+  .sidebar-toggle {
+    display: inline-block;
+  }
+
+  /* Sidebar hidden off screen by default */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 9;
+    width: 250px;
+  }
+
+  /* Sidebar visible when open */
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Main content takes full width on mobile */
+  .main-content {
+    margin-left: 0 !important;
+    padding: 86px 14px 28px;
+  }
+
+  /* Stack form grids on mobile */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stack filter rows on mobile */
+  .filter-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stack chart grid on mobile */
+  .chart-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stack KPI grid on mobile */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Make tables scrollable on mobile */
+  .card {
+    overflow-x: auto;
+  }
+
+  /* Page head stacks on mobile */
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Nav adjustments */
+  .nav h2 {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+  h1 {
+    font-size: 24px !important;
+  }
+}
