@@ -1,13 +1,12 @@
 from rest_framework import viewsets
-from .models import Department
-from .serializers import DepartmentSerializer
-from users.permissions import IsAdminOrManagerOrReadOnly
+from .models import Service
+from .serializers import ServiceSerializer
 from rest_framework.permissions import IsAuthenticated
 from users.permissions import IsAdminOnly
 
-class DepartmentViewSet(viewsets.ModelViewSet):
-    queryset = Department.objects.all().order_by("name")
-    serializer_class = DepartmentSerializer
+class ServiceViewSet(viewsets.ModelViewSet):
+    queryset = Service.objects.select_related("department").all().order_by("name")
+    serializer_class = ServiceSerializer
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
