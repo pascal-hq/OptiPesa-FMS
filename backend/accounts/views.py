@@ -1,37 +1,50 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
-from django.db import models
+from rest_framework import status
+from django.db.models import Q
 from .models import Account
 from transactions.models import Transaction
 from users.permissions import IsAdminOnly
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-class IsAdminOrManager(BasePermission):
-    def has_permission(self, request, view):
-        user = request.user
-        return bool(
-            user and user.is_authenticated and
-            getattr(user, "role", "") in ["admin", "manager"]
-        )
 
-class IsAdminOrManagerOrReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        user = request.user
-        if not (user and user.is_authenticated):
-            return False
-        if request.method in SAFE_METHODS:
-            return True
-        return getattr(user, "role", "") in ["admin", "manager"]
 
-class IsAdminOnly(BasePermission):
+class AccountActivityAPIView(APIView):
     """
-    Only admin role or superuser can access.
+    Admin only.
+    Returns all accounts with their balances and recent transactions.
     """
-    def has_permission(self, request, view):
-        user = request.user
-        return bool(
-            user and user.is_authenticated and
-            (user.is_superuser or getattr(user, "role", "") == "admin")
-        )
+    permission_classes = [IsAdminOnly]
+
+    def get(self, request):
+        accounts = Account.objects.select_related("user").all().order_by("user__username")
+
+        data = []
+        for acc in accounts:
+            txs = Transaction.objects.filter(
+                Q(sender=acc.user) | Q(receiver=acc.user)
+            ).order_by("-created_at")[:10]
+
+            tx_data = [{
+                "id": t.id,
+                "tx_type": t.tx_type,
+                "channel": t.channel,
+                "status": t.status,
+                "amount": str(t.amount),
+                "sender": t.sender.username if t.sender else None,
+                "receiver": t.receiver.username if t.receiver else None,
+                "narration": t.narration,
+                "created_at": t.created_at.isoformat(),
+            } for t in txs]
+
+            data.append({
+                "user_id": acc.user.id,
+                "username": acc.user.username,
+                "role": acc.user.role,
+                "account_number": acc.account_number,
+                "balance": str(acc.balance),
+                "recent_transactions": tx_data,
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
