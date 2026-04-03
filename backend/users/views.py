@@ -73,25 +73,26 @@ class ChangePasswordAPIView(APIView):
 class UserListCreateAPIView(APIView):
     """
     GET  — Admin and Manager can list users.
-    POST — Admin only can create users.
+           Manager can see staff and other managers but NOT admins.
+    POST — Admin can create any role.
+           Manager can only create staff.
     """
-
-    def get_permissions(self):
-        if self.request.method == "GET":
-            return [IsAdminOrManager()]
-        return [IsAdminOnly()]
+    permission_classes = [IsAdminOrManager]
 
     def get(self, request):
-        users = User.objects.all().order_by("username")
         requesting_role = getattr(request.user, "role", "")
+        users = User.objects.all().order_by("username")
 
         data = []
         for u in users:
-            # Managers cannot see admin accounts
+            target_role = getattr(u, "role", "")
+
+            # Manager cannot see admin accounts
             if requesting_role == "manager" and (
-                getattr(u, "role", "") == "admin" or u.is_superuser
+                target_role == "admin" or u.is_superuser
             ):
                 continue
+
             data.append({
                 "id": u.id,
                 "username": u.username,
@@ -104,6 +105,7 @@ class UserListCreateAPIView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        requesting_role = getattr(request.user, "role", "")
         username = request.data.get("username", "").strip()
         email = request.data.get("email", "").strip()
         password = request.data.get("password", "").strip()
@@ -135,6 +137,13 @@ class UserListCreateAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Manager can only create staff accounts
+        if requesting_role == "manager" and role != "staff":
+            return Response(
+                {"detail": "Managers can only create staff accounts."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         user = User.objects.create_user(
             username=username,
             email=email,
@@ -157,14 +166,16 @@ class UserListCreateAPIView(APIView):
 class UserDetailAPIView(APIView):
     """
     GET    — Admin and Manager can view a user.
-    PATCH  — Admin only can edit. Manager cannot edit admin accounts.
-    DELETE — Admin only can delete. Cannot delete own account.
+             Manager cannot view admin accounts.
+    PATCH  — Admin can edit anyone.
+             Manager can only edit staff accounts.
+             Manager cannot edit managers or admins.
+    DELETE — Admin can delete staff and managers (not other admins).
+             Manager can only delete staff accounts.
+             Nobody can delete their own account.
+             Nobody can delete an admin account.
     """
-
-    def get_permissions(self):
-        if self.request.method == "GET":
-            return [IsAdminOrManager()]
-        return [IsAdminOnly()]
+    permission_classes = [IsAdminOrManager]
 
     def get_user(self, pk):
         try:
@@ -179,6 +190,19 @@ class UserDetailAPIView(APIView):
                 {"detail": "User not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+        requesting_role = getattr(request.user, "role", "")
+        target_role = getattr(user, "role", "")
+
+        # Manager cannot view admin accounts
+        if requesting_role == "manager" and (
+            target_role == "admin" or user.is_superuser
+        ):
+            return Response(
+                {"detail": "You do not have permission to view this account."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         return Response({
             "id": user.id,
             "username": user.username,
@@ -199,12 +223,10 @@ class UserDetailAPIView(APIView):
         requesting_role = getattr(request.user, "role", "")
         target_role = getattr(user, "role", "")
 
-        # Prevent manager from editing admin accounts
-        if requesting_role == "manager" and (
-            target_role == "admin" or user.is_superuser
-        ):
+        # Manager can only edit staff accounts
+        if requesting_role == "manager" and target_role != "staff":
             return Response(
-                {"detail": "Managers cannot edit admin accounts."},
+                {"detail": "Managers can only edit staff accounts."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -214,6 +236,15 @@ class UserDetailAPIView(APIView):
                 {"detail": "You cannot change your own role."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # Manager cannot assign admin or manager roles
+        if requesting_role == "manager" and "role" in request.data:
+            new_role = request.data["role"]
+            if new_role in ["admin", "manager"]:
+                return Response(
+                    {"detail": "Managers can only assign the staff role."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         if "username" in request.data:
             new_username = request.data["username"].strip()
@@ -267,18 +298,27 @@ class UserDetailAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Prevent deleting yourself
+        requesting_role = getattr(request.user, "role", "")
+        target_role = getattr(user, "role", "")
+
+        # Nobody can delete their own account
         if user == request.user:
             return Response(
                 {"detail": "You cannot delete your own account."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Prevent deleting admin accounts
-        target_role = getattr(user, "role", "")
+        # Nobody can delete an admin account
         if target_role == "admin" or user.is_superuser:
             return Response(
                 {"detail": "Admin accounts cannot be deleted."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Manager can only delete staff accounts
+        if requesting_role == "manager" and target_role != "staff":
+            return Response(
+                {"detail": "Managers can only delete staff accounts."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
