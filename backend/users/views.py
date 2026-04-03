@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.contrib.auth import get_user_model
-from users.permissions import IsAdminOrManager
+from users.permissions import IsAdminOrManager, IsAdminOnly
 
 User = get_user_model()
 
@@ -72,24 +72,35 @@ class ChangePasswordAPIView(APIView):
 
 class UserListCreateAPIView(APIView):
     """
-    Admin/Manager only.
-    List all users or create a new user.
+    GET  — Admin and Manager can list users.
+    POST — Admin only can create users.
     """
-    permission_classes = [IsAdminOrManager]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAdminOrManager()]
+        return [IsAdminOnly()]
 
     def get(self, request):
         users = User.objects.all().order_by("username")
-        data = [
-            {
+        requesting_role = getattr(request.user, "role", "")
+
+        data = []
+        for u in users:
+            # Managers cannot see admin accounts
+            if requesting_role == "manager" and (
+                getattr(u, "role", "") == "admin" or u.is_superuser
+            ):
+                continue
+            data.append({
                 "id": u.id,
                 "username": u.username,
                 "email": u.email,
                 "role": u.role,
                 "is_active": u.is_active,
                 "date_joined": u.date_joined.isoformat(),
-            }
-            for u in users
-        ]
+            })
+
         return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -145,10 +156,15 @@ class UserListCreateAPIView(APIView):
 
 class UserDetailAPIView(APIView):
     """
-    Admin/Manager only.
-    Retrieve, update or delete a specific user.
+    GET    — Admin and Manager can view a user.
+    PATCH  — Admin only can edit. Manager cannot edit admin accounts.
+    DELETE — Admin only can delete. Cannot delete own account.
     """
-    permission_classes = [IsAdminOrManager]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAdminOrManager()]
+        return [IsAdminOnly()]
 
     def get_user(self, pk):
         try:
@@ -178,6 +194,18 @@ class UserDetailAPIView(APIView):
             return Response(
                 {"detail": "User not found."},
                 status=status.HTTP_404_NOT_FOUND
+            )
+
+        requesting_role = getattr(request.user, "role", "")
+        target_role = getattr(user, "role", "")
+
+        # Prevent manager from editing admin accounts
+        if requesting_role == "manager" and (
+            target_role == "admin" or user.is_superuser
+        ):
+            return Response(
+                {"detail": "Managers cannot edit admin accounts."},
+                status=status.HTTP_403_FORBIDDEN
             )
 
         # Prevent changing your own role
@@ -244,6 +272,14 @@ class UserDetailAPIView(APIView):
             return Response(
                 {"detail": "You cannot delete your own account."},
                 status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Prevent deleting admin accounts
+        target_role = getattr(user, "role", "")
+        if target_role == "admin" or user.is_superuser:
+            return Response(
+                {"detail": "Admin accounts cannot be deleted."},
+                status=status.HTTP_403_FORBIDDEN
             )
 
         user.delete()
