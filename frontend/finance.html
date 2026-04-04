@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Finance</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-left">
+      <button class="sidebar-toggle" id="sidebarToggle" title="Toggle menu">☰</button>
+      <h2>OptiPesa</h2>
+    </div>
+    <div class="nav-right">
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">🌙</button>
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <aside class="sidebar">
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="sales.html">Record Sale</a></li>
+      <li><a href="transactions.html">Transactions</a></li>
+      <li class="admin-only"><a href="finance.html" class="active">Finance</a></li>
+      <li class="admin-only"><a href="departments.html">Departments</a></li>
+      <li class="admin-only"><a href="employees.html">Employees</a></li>
+      <li class="admin-only"><a href="services.html">Services</a></li>
+      <li class="admin-only"><a href="expenses.html">Expenses</a></li>
+      <li class="admin-only"><a href="analytics.html">Analytics</a></li>
+      <li class="admin-only"><a href="accounts.html">Account Activity</a></li>
+      <li class="admin-only"><a href="users.html">Users</a></li>
+      <li class="admin-only"><a href="settings.html">Settings</a></li>
+      <li><a href="change_password.html">Change Password</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-head">
+      <div>
+        <h1>Finance</h1>
+        <p class="muted">Manage deposits, withdrawals and transfers</p>
+      </div>
+    </div>
+
+    <p id="message" class="msg"></p>
+
+    <!-- Tabs -->
+    <div class="tabs" id="financeTabs" style="margin-bottom:16px;">
+      <button type="button" class="tab active" data-tab="deposit">Deposit</button>
+      <button type="button" class="tab" data-tab="withdraw">Withdraw</button>
+      <button type="button" class="tab" data-tab="transfer">Transfer</button>
+    </div>
+
+    <!-- Deposit -->
+    <section class="card" id="tabDeposit">
+      <h3>Deposit Funds</h3>
+      <p class="muted">Add funds to a user's account.</p>
+      <form id="depositForm" class="form-grid">
+        <div>
+          <label for="depositUsername">Recipient Username</label>
+          <select id="depositUsername">
+            <option value="">Loading users...</option>
+          </select>
+        </div>
+        <div>
+          <label for="depositAmount">Amount (KES)</label>
+          <input id="depositAmount" type="number" min="1" placeholder="e.g. 5000" required />
+        </div>
+        <div style="grid-column:1/-1;">
+          <label for="depositNarration">Narration (optional)</label>
+          <input id="depositNarration" type="text" placeholder="e.g. Monthly top-up" />
+        </div>
+        <div style="align-self:end;">
+          <button type="submit" class="primary">Deposit</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Withdraw -->
+    <section class="card" id="tabWithdraw" style="display:none;">
+      <h3>Withdraw Funds</h3>
+      <p class="muted">Withdraw funds from your account.</p>
+      <form id="withdrawForm" class="form-grid">
+        <div>
+          <label for="withdrawAmount">Amount (KES)</label>
+          <input id="withdrawAmount" type="number" min="1" placeholder="e.g. 2000" required />
+        </div>
+        <div>
+          <label for="withdrawNarration">Narration (optional)</label>
+          <input id="withdrawNarration" type="text" placeholder="e.g. Cash withdrawal" />
+        </div>
+        <div style="align-self:end;">
+          <button type="submit" class="primary">Withdraw</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Transfer -->
+    <section class="card" id="tabTransfer" style="display:none;">
+      <h3>Transfer Funds</h3>
+      <p class="muted">Transfer funds from your account to another user.</p>
+      <form id="transferForm" class="form-grid">
+        <div>
+          <label for="transferUsername">Recipient Username</label>
+          <select id="transferUsername">
+            <option value="">Loading users...</option>
+          </select>
+        </div>
+        <div>
+          <label for="transferAmount">Amount (KES)</label>
+          <input id="transferAmount" type="number" min="1" placeholder="e.g. 3000" required />
+        </div>
+        <div style="grid-column:1/-1;">
+          <label for="transferNarration">Narration (optional)</label>
+          <input id="transferNarration" type="text" placeholder="e.g. Salary payment" />
+        </div>
+        <div style="align-self:end;">
+          <button type="submit" class="primary">Transfer</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Recent Finance Transactions -->
+    <section class="card" style="margin-top:20px;">
+      <h3>Recent Finance Transactions</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Narration</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="financeBody">
+          <tr><td colspan="7">Loading...</td></tr>
+        </tbody>
+      </table>
+      <div id="financePagination"></div>
+    </section>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/ui-nav.js"></script>
+  <script src="assets/js/pages/finance.js"></script>
+</body>
+</html>

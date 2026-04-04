@@ -29,12 +29,6 @@ let POLL_TIMER = null;
 let trendChart = null;
 let departmentChart = null;
 
-function formatLocalDate(dateString) {
-  if (!dateString) return "";
-  const d = new Date(dateString);
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
 function formatKES(value) {
   const num = Number(value || 0);
   try {
@@ -66,7 +60,6 @@ function monthPrefix() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
 }
 
-
 async function loadRoleAndApplyUI() {
   try {
     const me = await apiRequest("/api/me/", "GET");
@@ -77,18 +70,14 @@ async function loadRoleAndApplyUI() {
     welcomeText.textContent = `Welcome, ${me.username} (${me.role})`;
 
     if (!IS_ADMIN_MANAGER) {
-      // Hide admin-only elements
       document.querySelectorAll(".admin-only").forEach((el) => {
         el.style.display = "none";
       });
-
-      // Show staff-only elements
       document.querySelectorAll(".staff-only").forEach((el) => {
         el.style.display = "";
       });
-
-      // Update page title for staff
-      document.querySelector(".page-head h1").textContent = "My Performance";
+      const pageHead = document.querySelector(".page-head h1");
+      if (pageHead) pageHead.textContent = "My Performance";
     }
   } catch (err) {
     welcomeText.textContent = "Welcome";
@@ -134,19 +123,30 @@ async function loadDashboard() {
           (t) => t.receiver === (CURRENT_USER && CURRENT_USER.username)
         );
 
-    const todaySales = mySales
+    // Apply date filter if set
+    const filteredSales = mySales.filter(t => {
+      if (startDateEl && startDateEl.value) {
+        if (safeText(t.created_at).slice(0, 10) < startDateEl.value) return false;
+      }
+      if (endDateEl && endDateEl.value) {
+        if (safeText(t.created_at).slice(0, 10) > endDateEl.value) return false;
+      }
+      return true;
+    });
+
+    const todaySales = filteredSales
       .filter((t) => safeText(t.created_at).slice(0, 10) === tKey)
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-    const monthSales = mySales
+    const monthSales = filteredSales
       .filter((t) => safeText(t.created_at).slice(0, 7) === mKey)
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
     kpiTodaySales.textContent = formatKES(todaySales);
     kpiMonthSales.textContent = formatKES(monthSales);
 
-    // Staff: show their own recent sales
-    const recentSales = mySales
+    // Recent sales table
+    const recentSales = filteredSales
       .slice()
       .sort((a, b) => safeText(b.created_at).localeCompare(safeText(a.created_at)))
       .slice(0, 10);
@@ -169,7 +169,7 @@ async function loadDashboard() {
       }).join("");
     }
 
-    // Staff: show their personal stats
+    // Staff personal stats
     if (!IS_ADMIN_MANAGER) {
       const totalMySales = mySales.reduce((sum, t) => sum + Number(t.amount || 0), 0);
       const myTxCount = document.getElementById("kpiMyTotalSales");
@@ -178,18 +178,18 @@ async function loadDashboard() {
       if (myCountEl) myCountEl.textContent = String(mySales.length);
     }
 
-    // Admin/Manager: load expenses and analytics
+    // Admin/Manager: load expenses, top performers and analytics
     if (IS_ADMIN_MANAGER) {
       const exp = await apiRequest("/api/expenses/", "GET");
       const expList = Array.isArray(exp) ? exp : [];
 
-  // Apply date filter if set
+      // Apply date filter to expenses
       let filteredExp = expList;
       if (startDateEl && startDateEl.value) {
-         filteredExp = filteredExp.filter(e => e.expense_date >= startDateEl.value);
+        filteredExp = filteredExp.filter(e => e.expense_date >= startDateEl.value);
       }
       if (endDateEl && endDateEl.value) {
-         filteredExp = filteredExp.filter(e => e.expense_date <= endDateEl.value);
+        filteredExp = filteredExp.filter(e => e.expense_date <= endDateEl.value);
       }
 
       const todayExpenses = filteredExp
@@ -203,10 +203,10 @@ async function loadDashboard() {
       kpiTodayExpenses.textContent = formatKES(todayExpenses);
       kpiTodayNet.textContent = formatKES(todaySales - todayExpenses);
 
-  // Show expense alert
+      // Show expense alert
       showExpenseAlert(totalMonthExpenses);
 
-  // Recent expenses table
+      // Recent expenses table
       const recentExp = filteredExp
         .slice()
         .sort((a, b) => safeText(b.expense_date).localeCompare(safeText(a.expense_date)))
@@ -222,10 +222,36 @@ async function loadDashboard() {
             <td><strong>${formatKES(e.amount)}</strong></td>
             <td>${safeText(e.description) || "—"}</td>
             <td>${safeText(e.recorded_by_username || e.recorded_by) || "—"}</td>
-         </tr>
-       `).join("");
+          </tr>
+        `).join("");
       }
-  }
+
+      // Top performers — THIS WAS MISSING
+      if (topPerformersEl) {
+        try {
+          const perf = await apiRequest("/api/analytics/performance/", "GET");
+          const bestDept = perf.best_department;
+          const bestEmp = perf.best_employee;
+
+          const deptLine = bestDept
+            ? `🏆 Best Department: <strong>${bestDept["department__name"]}</strong> (${formatKES(bestDept.revenue)})`
+            : `🏆 Best Department: —`;
+
+          const empLine = bestEmp
+            ? `⭐ Best Employee: <strong>${bestEmp["employee__full_name"]}</strong> (${formatKES(bestEmp.revenue)})`
+            : `⭐ Best Employee: —`;
+
+          topPerformersEl.innerHTML = `
+            <div class="stack">
+              <div class="pill">${deptLine}</div>
+              <div class="pill">${empLine}</div>
+            </div>
+          `;
+        } catch {
+          topPerformersEl.textContent = "Top performers unavailable.";
+        }
+      }
+    }
 
     showMessage(msg, "", "success");
   } catch (err) {
@@ -399,12 +425,6 @@ document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible") await refreshAll();
 });
 
-(async function init() {
-  await loadRoleAndApplyUI();
-  await refreshAll();
-  startPolling();
-})();
-
 if (applyDateBtn) {
   applyDateBtn.addEventListener("click", () => refreshAll());
 }
@@ -415,3 +435,9 @@ if (clearDateBtn) {
     refreshAll();
   });
 }
+
+(async function init() {
+  await loadRoleAndApplyUI();
+  await refreshAll();
+  startPolling();
+})();
