@@ -134,8 +134,12 @@ form.addEventListener("submit", async (e) => {
     channel: channel,
     reference: document.getElementById("reference").value.trim(),
     narration: document.getElementById("narration").value.trim(),
-  };
+};
 
+  // Add phone number for M-Pesa
+  if (channel === "mpesa" && mpesaPhoneEl.value.trim()) {
+      payload.phone_number = mpesaPhoneEl.value.trim();
+  }
   // Validate amount
   if (!payload.amount || payload.amount <= 0) {
     showMessage(msg, " Amount must be greater than 0.", "error");

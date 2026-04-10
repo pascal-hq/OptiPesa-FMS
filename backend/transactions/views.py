@@ -2,10 +2,12 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from decimal import Decimal
 
 from departments.models import Department
 from employees.models import Employee
 from services.models import Service
+from accounts.models import Account
 
 from users.models import User
 from users.permissions import IsAdminOrManager
@@ -17,7 +19,7 @@ from .services import create_deposit, create_transfer, create_withdrawal, create
 
 class DepositAPIView(APIView):
     """
-    Admin/Manager/Superuser only.
+    Admin/Manager only.
     Deposit funds to a user's account (internal).
     """
     permission_classes = [IsAdminOrManager]
@@ -33,7 +35,10 @@ class DepositAPIView(APIView):
         try:
             receiver = User.objects.get(username=receiver_username)
         except User.DoesNotExist:
-            return Response({"detail": "Receiver not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Receiver not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         tx = create_deposit(
             receiver=receiver,
@@ -58,7 +63,7 @@ class DepositAPIView(APIView):
 
 class TransferAPIView(APIView):
     """
-    Admin/Manager/Superuser only.
+    Admin/Manager only.
     Transfer funds from logged-in user to another user (internal).
     """
     permission_classes = [IsAdminOrManager]
@@ -74,7 +79,10 @@ class TransferAPIView(APIView):
         try:
             receiver = User.objects.get(username=receiver_username)
         except User.DoesNotExist:
-            return Response({"detail": "Receiver not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Receiver not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
             tx = create_transfer(
@@ -106,7 +114,7 @@ class TransferAPIView(APIView):
 
 class WithdrawAPIView(APIView):
     """
-    Admin/Manager/Superuser only.
+    Admin/Manager only.
     Withdraw funds from logged-in user account (internal).
     """
     permission_classes = [IsAdminOrManager]
@@ -194,6 +202,7 @@ class SaleAPIView(APIView):
     """
     Any authenticated user (staff allowed).
     Records a sale transaction linked to Department/Employee/Service.
+    If channel is mpesa, initiates STK push and saves CheckoutRequestID.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -216,11 +225,20 @@ class SaleAPIView(APIView):
         service = Service.objects.filter(id=svc_id).first() if svc_id else None
 
         if dept_id and not department:
-            return Response({"detail": "Department not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Department not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
         if emp_id and not employee:
-            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Employee not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
         if svc_id and not service:
-            return Response({"detail": "Service not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Service not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
             tx = create_sale(
@@ -240,6 +258,38 @@ class SaleAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # If M-Pesa channel, initiate STK push and save CheckoutRequestID
+        if channel == "mpesa":
+            try:
+                from payments.utils import initiate_stk_push
+                phone = request.data.get("phone_number", "").strip()
+                if phone:
+                    # Normalize phone number
+                    if phone.startswith("0"):
+                        phone = "254" + phone[1:]
+                    elif phone.startswith("+"):
+                        phone = phone[1:]
+
+                    mpesa_response = initiate_stk_push(
+                        phone_number=phone,
+                        amount=int(tx.amount),
+                        account_reference="OptiPesa",
+                        description=narration or "OptiPesa Payment",
+                    )
+
+                    # Save CheckoutRequestID to match callback later
+                    checkout_id = mpesa_response.get("CheckoutRequestID", "")
+                    if checkout_id:
+                        tx.checkout_request_id = checkout_id
+                        tx.save()
+
+                    print(f"STK Push sent. CheckoutRequestID: {checkout_id}")
+
+            except Exception as e:
+                print(f"STK Push failed: {e}")
+                # Transaction already created as pending
+                # Staff should collect payment manually if STK fails
+
         return Response(
             {
                 "message": "Sale recorded successfully",
@@ -258,6 +308,7 @@ class SaleAPIView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
 
 class TransactionReceiptAPIView(APIView):
     """

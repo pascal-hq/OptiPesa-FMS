@@ -74,7 +74,9 @@ class Transaction(models.Model):
     reference = models.CharField(max_length=100, blank=True)  # mpesa code or internal ref
     narration = models.CharField(max_length=255, blank=True)
 
+    checkout_request_id = models.CharField(max_length=200, blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
+    
     def __str__(self):
         return f"{self.tx_type} - {self.amount} - {self.status}"
