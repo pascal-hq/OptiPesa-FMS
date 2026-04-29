@@ -17,12 +17,20 @@ const trendDayBtn = document.getElementById("trendDayBtn");
 
 const trendChartCanvas = document.getElementById("trendChart");
 const deptChartCanvas = document.getElementById("deptChart");
+const channelChartCanvas = document.getElementById("channelChart");
+const empCompareChartCanvas = document.getElementById("empCompareChart");
+const salesExpBarChartCanvas = document.getElementById("salesExpBarChart");
 
-
+const commissionRateEl = document.getElementById("commissionRate");
+const calcCommissionBtn = document.getElementById("calcCommissionBtn");
+const commissionBody = document.getElementById("commissionBody");
 
 let currentPeriod = "week";
 let trendChart = null;
 let deptChart = null;
+let channelChart = null;
+let empCompareChart = null;
+let salesExpBarChart = null;
 
 function qsWithDates(basePath) {
   const params = new URLSearchParams();
@@ -243,6 +251,152 @@ function renderDeptChart(rows) {
   });
 }
 
+function renderChannelChart(transactions) {
+  if (!channelChartCanvas || typeof Chart === "undefined") return;
+
+  const internal = transactions.filter(t => t.channel === "internal").length;
+  const mpesa = transactions.filter(t => t.channel === "mpesa").length;
+
+  if (channelChart) channelChart.destroy();
+
+  channelChart = new Chart(channelChartCanvas, {
+    type: "doughnut",
+    data: {
+      labels: ["Cash / Internal", "M-Pesa"],
+      datasets: [{
+        data: [internal, mpesa],
+        backgroundColor: [
+          "rgba(37, 99, 235, 0.85)",
+          "rgba(16, 185, 129, 0.85)",
+        ],
+        borderWidth: 0,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "bottom" },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.label}: ${ctx.raw} transactions`
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderEmpCompareChart(empData) {
+  if (!empCompareChartCanvas || typeof Chart === "undefined") return;
+  if (!empData || empData.length === 0) return;
+
+  const labels = empData.map(e => e.employee__full_name || "Unknown");
+  const values = empData.map(e => Number(e.revenue || 0));
+
+  if (empCompareChart) empCompareChart.destroy();
+
+  empCompareChart = new Chart(empCompareChartCanvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Revenue",
+        data: values,
+        backgroundColor: labels.map((_, i) => [
+          "rgba(37, 99, 235, 0.85)",
+          "rgba(14, 165, 233, 0.85)",
+          "rgba(16, 185, 129, 0.85)",
+          "rgba(245, 158, 11, 0.85)",
+          "rgba(168, 85, 247, 0.85)",
+          "rgba(239, 68, 68, 0.85)",
+        ][i % 6]),
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      indexAxis: "y",
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `Revenue: ${formatKES(ctx.raw)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { color: "#64748b", callback: v => formatKES(v) },
+          grid: { color: "rgba(148, 163, 184, 0.15)" }
+        },
+        y: {
+          ticks: { color: "#64748b" },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function renderSalesExpBarChart(salesTrend, expensesTrend) {
+  if (!salesExpBarChartCanvas || typeof Chart === "undefined") return;
+
+  const allPeriods = new Set();
+  salesTrend.forEach(x => allPeriods.add(x.period));
+  expensesTrend.forEach(x => allPeriods.add(x.period));
+  const labels = Array.from(allPeriods).sort();
+
+  const salesMap = {};
+  const expMap = {};
+  salesTrend.forEach(x => salesMap[x.period] = Number(x.total || 0));
+  expensesTrend.forEach(x => expMap[x.period] = Number(x.total || 0));
+
+  if (salesExpBarChart) salesExpBarChart.destroy();
+
+  salesExpBarChart = new Chart(salesExpBarChartCanvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Sales",
+          data: labels.map(l => salesMap[l] || 0),
+          backgroundColor: "rgba(37, 99, 235, 0.85)",
+          borderRadius: 6,
+        },
+        {
+          label: "Expenses",
+          data: labels.map(l => expMap[l] || 0),
+          backgroundColor: "rgba(220, 38, 38, 0.85)",
+          borderRadius: 6,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: ${formatKES(ctx.raw)}`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#64748b" } },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#64748b", callback: v => formatKES(v) },
+          grid: { color: "rgba(148, 163, 184, 0.15)" }
+        }
+      }
+    }
+  });
+}
+
 function setActivePeriodBtn(period) {
   trendMonthBtn.classList.toggle("active", period === "month");
   trendWeekBtn.classList.toggle("active", period === "week");
@@ -269,6 +423,23 @@ async function loadAnalytics() {
     renderTrendChart(trends.sales_trend || [], trends.expenses_trend || []);
 
     setActivePeriodBtn(currentPeriod);
+
+    // Fetch all transactions for channel chart
+    try {
+      const txData = await apiRequest("/api/transactions/", "GET");
+      const allTx = Array.isArray(txData) ? txData : [];
+      const saleTx = allTx.filter(t => t.tx_type === "sale" && t.status === "successful");
+      renderChannelChart(saleTx);
+    } catch (err) {
+      console.error("Channel chart error:", err);
+    }
+
+    // Employee comparison chart
+    renderEmpCompareChart(perf.revenue_by_employee || []);
+
+    // Sales vs Expenses bar chart
+    renderSalesExpBarChart(trends.sales_trend || [], trends.expenses_trend || []);
+
     showMessage(msg, "", "success");
   } catch (err) {
     console.error(err);
@@ -299,5 +470,35 @@ trendDayBtn.addEventListener("click", () => {
   currentPeriod = "day";
   loadAnalytics();
 });
+
+async function loadCommissions() {
+  const rate = commissionRateEl.value || 10;
+  try {
+    commissionBody.innerHTML = `<tr><td colspan="6">Loading...</td></tr>`;
+    const data = await apiRequest(`/api/analytics/commission/?rate=${rate}`, "GET");
+
+    if (!data || data.length === 0) {
+      commissionBody.innerHTML = `<tr><td colspan="6">No commission data yet.</td></tr>`;
+      return;
+    }
+
+    commissionBody.innerHTML = data.map(e => `
+      <tr>
+        <td>${e.employee_name || "—"}</td>
+        <td>${e.department || "—"}</td>
+        <td>${e.sales_count}</td>
+        <td>${formatKES(e.total_sales)}</td>
+        <td>${e.commission_rate}</td>
+        <td><strong style="color:#0aa844;">${formatKES(e.commission_amount)}</strong></td>
+      </tr>
+    `).join("");
+  } catch (err) {
+    commissionBody.innerHTML = `<tr><td colspan="6">❌ ${err.message}</td></tr>`;
+  }
+}
+
+if (calcCommissionBtn) {
+  calcCommissionBtn.addEventListener("click", loadCommissions);
+}
 
 loadAnalytics();

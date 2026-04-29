@@ -161,3 +161,44 @@ class AnalyticsTrendsAPIView(APIView):
             {"period": period, "sales_trend": sales_data, "expenses_trend": exp_data},
             status=status.HTTP_200_OK,
         )
+class EmployeeCommissionAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from transactions.models import Transaction
+        from django.db.models import Sum, Count
+
+        commission_rate = float(request.query_params.get("rate", 10)) / 100
+
+        emp_data = (
+            Transaction.objects.filter(
+                tx_type="sale",
+                status="successful",
+                employee__isnull=False
+            )
+            .values(
+                "employee__id",
+                "employee__full_name",
+                "department__name"
+            )
+            .annotate(
+                total_sales=Sum("amount"),
+                sales_count=Count("id")
+            )
+            .order_by("-total_sales")
+        )
+
+        data = []
+        for e in emp_data:
+            total = float(e["total_sales"] or 0)
+            data.append({
+                "employee_id": e["employee__id"],
+                "employee_name": e["employee__full_name"],
+                "department": e["department__name"],
+                "total_sales": str(e["total_sales"] or 0),
+                "sales_count": e["sales_count"],
+                "commission_rate": f"{commission_rate * 100:.0f}%",
+                "commission_amount": f"{total * commission_rate:.2f}",
+            })
+
+        return Response(data, status=status.HTTP_200_OK)

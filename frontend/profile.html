@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiPesa | Profile</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <nav class="nav">
+  <div class="nav-left">
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+    <h2>OptiPesa</h2>
+  </div>
+  <div class="nav-right">
+    <!-- Notifications Bell -->
+    <div style="position:relative;">
+      <button class="notif-bell" id="notifBell" title="Notifications">🔔
+        <span class="notif-badge" id="notifBadge"></span>
+      </button>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+          <span>Notifications</span>
+          <button id="notifClear" style="font-size:12px; padding:4px 8px;">Clear all</button>
+        </div>
+        <div id="notifList">
+          <div class="notif-empty">🔔 No notifications yet</div>
+        </div>
+      </div>
+    </div>
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">🌙</button>
+    <button type="button" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+  <aside class="sidebar">
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="sales.html">Record Sale</a></li>
+      <li><a href="transactions.html">Transactions</a></li>
+      <li class="admin-only"><a href="finance.html">Finance</a></li>
+      <li class="admin-only"><a href="departments.html">Departments</a></li>
+      <li class="admin-only"><a href="employees.html">Employees</a></li>
+      <li class="admin-only"><a href="services.html">Services</a></li>
+      <li class="admin-only"><a href="expenses.html">Expenses</a></li>
+      <li class="admin-only"><a href="analytics.html">Analytics</a></li>
+      <li class="admin-only"><a href="accounts.html">Account Activity</a></li>
+      <li class="admin-only"><a href="users.html">Users</a></li>
+      <li class="admin-only"><a href="settings.html">Settings</a></li>
+      <li><a href="profile.html" class="active">Profile</a></li>
+      <li><a href="change_password.html">Change Password</a></li>
+      <li class="admin-only"><a href="activity_log.html">Activity Log</a></li>
+      <li><a href="profile.html">Profile</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-head">
+      <div>
+        <h1>My Profile</h1>
+        <p class="muted">View and update your profile information</p>
+      </div>
+    </div>
+
+    <p id="message" class="msg"></p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+      <section class="card">
+        <h3>Profile Information</h3>
+        <form id="profileForm" class="form-grid">
+          <div style="grid-column:1/-1; text-align:center; margin-bottom:10px;">
+            <div id="avatarCircle" style="
+              width:80px; height:80px;
+              border-radius:50%;
+              background:linear-gradient(135deg,#2563eb,#1a3fa0);
+              display:flex; align-items:center; justify-content:center;
+              font-size:32px; font-weight:900; color:#fff;
+              margin:0 auto 10px;
+            ">P</div>
+            <p class="muted" id="profileRole" style="font-size:13px;">Role: —</p>
+          </div>
+          <div>
+            <label for="profileUsername">Username</label>
+            <input id="profileUsername" type="text" placeholder="Username" />
+          </div>
+          <div>
+            <label for="profileEmail">Email</label>
+            <input id="profileEmail" type="email" placeholder="Email address" />
+          </div>
+          <div style="grid-column:1/-1;">
+            <button type="submit" class="primary">Update Profile</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h3>My Stats</h3>
+        <div class="kpi-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="kpi">
+            <div class="kpi-label">Total Sales</div>
+            <div class="kpi-value" id="statTotalSales">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Sales Count</div>
+            <div class="kpi-value" id="statSalesCount">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">This Month</div>
+            <div class="kpi-value" id="statMonthSales">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Today</div>
+            <div class="kpi-value" id="statTodaySales">—</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="card" style="margin-top:20px;">
+      <h3>My Recent Sales</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Department</th>
+            <th>Employee</th>
+            <th>Service</th>
+            <th>Amount</th>
+            <th>Channel</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="myRecentSales">
+          <tr><td colspan="7">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/ui-nav.js"></script>
+  <script src="assets/js/pages/profile.js"></script>
+</body>
+</html>

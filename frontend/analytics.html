@@ -10,11 +10,26 @@
 <body>
   <nav class="nav">
   <div class="nav-left">
-    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle menu">☰</button>
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
     <h2>OptiPesa</h2>
   </div>
   <div class="nav-right">
-    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+    <!-- Notifications Bell -->
+    <div style="position:relative;">
+      <button class="notif-bell" id="notifBell" title="Notifications">🔔
+        <span class="notif-badge" id="notifBadge"></span>
+      </button>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+          <span>Notifications</span>
+          <button id="notifClear" style="font-size:12px; padding:4px 8px;">Clear all</button>
+        </div>
+        <div id="notifList">
+          <div class="notif-empty">🔔 No notifications yet</div>
+        </div>
+      </div>
+    </div>
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">🌙</button>
     <button type="button" onclick="logout()">Logout</button>
   </div>
 </nav>
@@ -34,6 +49,8 @@
       <li><a href="change_password.html">Change Password</a></li>
       <li class="admin-only"><a href="settings.html">Settings</a></li>
       <li class="admin-only"><a href="accounts.html">Account Activity</a></li>
+      <li class="admin-only"><a href="activity_log.html">Activity Log</a></li>
+      <li><a href="profile.html">Profile</a></li>
     </ul>
   </aside>
 
@@ -129,6 +146,51 @@
         </div>
       </div>
     </section>
+      <section class="card">
+    <h3>Payment Channels</h3>
+    <div style="max-width:300px; margin:0 auto;">
+      <canvas id="channelChart"></canvas>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Employee Revenue Comparison</h3>
+    <canvas id="empCompareChart"></canvas>
+  </section>
+
+  <section class="card">
+    <h3>Sales vs Expenses (Bar)</h3>
+    <canvas id="salesExpBarChart"></canvas>
+  </section>
+  
+  <section class="card">
+    <h3>Employee Commission Tracking</h3>
+    <div class="form-grid" style="margin-bottom:16px;">
+      <div>
+        <label for="commissionRate">Commission Rate (%)</label>
+        <input id="commissionRate" type="number" min="1" max="100"
+          value="10" placeholder="e.g. 10" style="max-width:150px;" />
+      </div>
+      <div style="align-self:end;">
+        <button id="calcCommissionBtn" class="primary">Calculate</button>
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th align="left">Employee</th>
+          <th align="left">Department</th>
+          <th align="left">Sales Count</th>
+          <th align="left">Total Sales</th>
+          <th align="left">Rate</th>
+          <th align="left">Commission</th>
+        </tr>
+      </thead>
+      <tbody id="commissionBody">
+        <tr><td colspan="6">Click Calculate to load commissions.</td></tr>
+      </tbody>
+    </table>
+  </section>
   </main>
 
   <script src="assets/js/api.js"></script>

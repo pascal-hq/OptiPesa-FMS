@@ -3,8 +3,27 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.contrib.auth import get_user_model
 from users.permissions import IsAdminOrManager, IsAdminOnly
+from .models import ActivityLog
 
 User = get_user_model()
+
+
+def log_activity(user, action, details="", request=None):
+    """Helper to create activity log entries."""
+    ip = ""
+    if request:
+        ip = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        if ip:
+            ip = ip.split(",")[0].strip()
+        else:
+            ip = request.META.get("REMOTE_ADDR", "")
+
+    ActivityLog.objects.create(
+        user=user,
+        action=action,
+        details=details,
+        ip_address=ip
+    )
 
 
 class MeAPIView(APIView):
@@ -63,6 +82,8 @@ class ChangePasswordAPIView(APIView):
 
         user.set_password(new_password)
         user.save()
+
+        log_activity(user, "Changed password", request=request)
 
         return Response(
             {"detail": "Password changed successfully. Please log in again."},
@@ -149,6 +170,13 @@ class UserListCreateAPIView(APIView):
             email=email,
             password=password,
             role=role
+        )
+
+        log_activity(
+            request.user,
+            f"Created user: {user.username}",
+            details=f"Role: {user.role}",
+            request=request
         )
 
         return Response(
@@ -282,6 +310,12 @@ class UserDetailAPIView(APIView):
 
         user.save()
 
+        log_activity(
+            request.user,
+            f"Updated user: {user.username}",
+            request=request
+        )
+
         return Response({
             "id": user.id,
             "username": user.username,
@@ -322,8 +356,34 @@ class UserDetailAPIView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        log_activity(
+            request.user,
+            f"Deleted user: {user.username}",
+            request=request
+        )
+
         user.delete()
         return Response(
             {"detail": "User deleted successfully."},
             status=status.HTTP_204_NO_CONTENT
         )
+
+
+class ActivityLogAPIView(APIView):
+    """
+    Admin only — view activity logs.
+    """
+    permission_classes = [IsAdminOnly]
+
+    def get(self, request):
+        logs = ActivityLog.objects.select_related("user").all()[:200]
+        data = [{
+            "id": log.id,
+            "username": log.user.username if log.user else "Unknown",
+            "role": log.user.role if log.user else "—",
+            "action": log.action,
+            "details": log.details,
+            "ip_address": log.ip_address,
+            "created_at": log.created_at.isoformat(),
+        } for log in logs]
+        return Response(data, status=status.HTTP_200_OK)

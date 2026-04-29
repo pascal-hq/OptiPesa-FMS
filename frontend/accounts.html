@@ -9,15 +9,30 @@
 
 <body>
   <nav class="nav">
-    <div class="nav-left">
-      <button class="sidebar-toggle" id="sidebarToggle" title="Toggle menu">☰</button>
-      <h2>OptiPesa</h2>
+  <div class="nav-left">
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+    <h2>OptiPesa</h2>
+  </div>
+  <div class="nav-right">
+    <!-- Notifications Bell -->
+    <div style="position:relative;">
+      <button class="notif-bell" id="notifBell" title="Notifications">🔔
+        <span class="notif-badge" id="notifBadge"></span>
+      </button>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+          <span>Notifications</span>
+          <button id="notifClear" style="font-size:12px; padding:4px 8px;">Clear all</button>
+        </div>
+        <div id="notifList">
+          <div class="notif-empty">🔔 No notifications yet</div>
+        </div>
+      </div>
     </div>
-    <div class="nav-right">
-      <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">🌙</button>
-      <button type="button" onclick="logout()">Logout</button>
-    </div>
-  </nav>
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">🌙</button>
+    <button type="button" onclick="logout()">Logout</button>
+  </div>
+</nav>
 
   <aside class="sidebar">
     <ul>
@@ -30,10 +45,12 @@
       <li><a href="expenses.html">Expenses</a></li>
       <li class="admin-only"><a href="finance.html">Finance</a></li>
       <li><a href="analytics.html">Analytics</a></li>
-      <li><a href="accounts.html" class="active">Account Activity</a></li>
       <li><a href="users.html">Users</a></li>
       <li><a href="settings.html">Settings</a></li>
+      <li><a href="accounts.html" class="active">Account Activity</a></li>
       <li><a href="change_password.html">Change Password</a></li>
+      <li class="admin-only"><a href="activity_log.html">Activity Log</a></li>
+      <li><a href="profile.html">Profile</a></li>
     </ul>
   </aside>
 

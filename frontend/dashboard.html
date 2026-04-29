@@ -10,11 +10,26 @@
 <body>
   <nav class="nav">
   <div class="nav-left">
-    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle menu">☰</button>
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
     <h2>OptiPesa</h2>
   </div>
   <div class="nav-right">
-    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+    <!-- Notifications Bell -->
+    <div style="position:relative;">
+      <button class="notif-bell" id="notifBell" title="Notifications">🔔
+        <span class="notif-badge" id="notifBadge"></span>
+      </button>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+          <span>Notifications</span>
+          <button id="notifClear" style="font-size:12px; padding:4px 8px;">Clear all</button>
+        </div>
+        <div id="notifList">
+          <div class="notif-empty">🔔 No notifications yet</div>
+        </div>
+      </div>
+    </div>
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()">🌙</button>
     <button type="button" onclick="logout()">Logout</button>
   </div>
 </nav>
@@ -35,6 +50,8 @@
       <li><a href="change_password.html">Change Password</a></li>
       <li class="admin-only"><a href="settings.html">Settings</a></li>
       <li class="admin-only"><a href="accounts.html">Account Activity</a></li>
+      <li class="admin-only"><a href="activity_log.html">Activity Log</a></li>
+      <li><a href="profile.html">Profile</a></li>
     </ul>
   </aside>
 
@@ -102,6 +119,19 @@
           <div class="kpi-value" id="kpiTodayNet">—</div>
         </div>
       </div>
+      <div id="salesTargetSection" class="admin-only" style="margin-top:16px; display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:14px;">Monthly Sales Target</strong>
+        <span id="salesTargetLabel" style="font-size:13px; color:#6b7280;"></span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="salesProgressBar" style="width:0%"></div>
+      </div>
+      <div class="progress-label">
+        <span id="salesProgressLeft"></span>
+        <span id="salesProgressPct"></span>
+      </div>
+    </div>
 
       <!-- Staff only personal stats - hidden for admin/manager -->
 <div class="kpi-grid staff-only" style="display:none; margin-top:14px;">

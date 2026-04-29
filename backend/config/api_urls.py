@@ -43,3 +43,21 @@ urlpatterns = router.urls + [
     path("transactions/receipt/<int:pk>/", TransactionReceiptAPIView.as_view(), name="transaction-receipt"),
     path("accounts/activity/", AccountActivityAPIView.as_view(), name="account-activity"),
 ]
+
+from users.views import (
+    MeAPIView,
+    UserListCreateAPIView,
+    UserDetailAPIView,
+    ChangePasswordAPIView,
+    ActivityLogAPIView,
+)
+
+urlpatterns = router.urls + [
+    path("me/", MeAPIView.as_view(), name="me"),
+    path("users/", UserListCreateAPIView.as_view(), name="users"),
+    path("users/<int:pk>/", UserDetailAPIView.as_view(), name="user-detail"),
+    path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
+    path("transactions/receipt/<int:pk>/", TransactionReceiptAPIView.as_view(), name="transaction-receipt"),
+    path("accounts/activity/", AccountActivityAPIView.as_view(), name="account-activity"),
+    path("activity-log/", ActivityLogAPIView.as_view(), name="activity-log"),
+]

@@ -57,3 +57,23 @@ saveThresholdBtn.addEventListener("click", () => {
 });
 
 loadSettings();
+
+const salesTargetEl = document.getElementById("salesTarget");
+const saveSalesTargetBtn = document.getElementById("saveSalesTargetBtn");
+
+// Load saved target
+const savedTarget = localStorage.getItem("salesTarget") || "";
+if (salesTargetEl) salesTargetEl.value = savedTarget;
+
+if (saveSalesTargetBtn) {
+  saveSalesTargetBtn.addEventListener("click", () => {
+    const target = salesTargetEl.value.trim();
+    if (target && Number(target) > 0) {
+      localStorage.setItem("salesTarget", target);
+      showMessage(msg, "✅ Sales target saved.", "success");
+    } else {
+      localStorage.removeItem("salesTarget");
+      showMessage(msg, "✅ Sales target cleared.", "success");
+    }
+  });
+}

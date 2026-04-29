@@ -272,3 +272,214 @@ function initMobileSidebar() {
 document.addEventListener("DOMContentLoaded", () => {
   initMobileSidebar();
 });
+
+/* ---- Toast Notifications ---- */
+(function initToastContainer() {
+  if (!document.getElementById("toastContainer")) {
+    const container = document.createElement("div");
+    container.id = "toastContainer";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+})();
+
+function showToast(message, type = "success", title = null, duration = 3500) {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+
+  const icons = {
+    success: "✅",
+    error: "❌",
+    warning: "⚠️",
+    info: "ℹ️"
+  };
+
+  const titles = {
+    success: title || "Success",
+    error: title || "Error",
+    warning: title || "Warning",
+    info: title || "Info"
+  };
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || "ℹ️"}</span>
+    <div class="toast-body">
+      <div class="toast-title">${titles[type]}</div>
+      <div class="toast-message">${message}</div>
+    </div>
+    <button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>
+  `;
+
+  container.appendChild(toast);
+
+  // Auto dismiss
+  setTimeout(() => {
+    toast.classList.add("hiding");
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// Override showMessage to also show toast
+const _originalShowMessage = showMessage;
+function showMessage(el, text, type = "error") {
+  // Still update the inline message element
+  if (el && text) {
+    el.textContent = text;
+    el.className = type === "success" ? "msg success" : "msg error";
+  } else if (el) {
+    el.textContent = "";
+    el.className = "msg";
+  }
+
+  // Also show toast for non-empty messages
+  if (text && text.trim()) {
+    const toastType = type === "success" ? "success" : "error";
+    showToast(text, toastType);
+  }
+}
+
+/* ---- Session Timeout Warning ---- */
+function initSessionTimeout() {
+  // JWT tokens typically expire in 5 minutes (300 seconds)
+  // Warn user 2 minutes before expiry
+  const WARNING_BEFORE = 2 * 60 * 1000; // 2 minutes
+  const CHECK_INTERVAL = 30 * 1000; // check every 30 seconds
+
+  function getTokenExpiry() {
+    const token = localStorage.getItem("access_token");
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.exp ? payload.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  let warningShown = false;
+  let warningToast = null;
+
+  function checkSession() {
+    const expiry = getTokenExpiry();
+    if (!expiry) return;
+
+    const now = Date.now();
+    const timeLeft = expiry - now;
+
+    if (timeLeft <= 0) {
+      // Session expired
+      showToast("Your session has expired. Please log in again.", "error", "Session Expired", 5000);
+      setTimeout(() => {
+        logout();
+      }, 3000);
+      return;
+    }
+
+    if (timeLeft <= WARNING_BEFORE && !warningShown) {
+      warningShown = true;
+      const minutes = Math.ceil(timeLeft / 60000);
+      showToast(
+        `Your session will expire in ${minutes} minute${minutes > 1 ? "s" : ""}. Save your work.`,
+        "warning",
+        "Session Expiring Soon",
+        10000
+      );
+    }
+
+    // Reset warning flag if session was refreshed
+    if (timeLeft > WARNING_BEFORE) {
+      warningShown = false;
+    }
+  }
+
+  // Only run on authenticated pages
+  if (localStorage.getItem("access_token")) {
+    setInterval(checkSession, CHECK_INTERVAL);
+    checkSession();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initSessionTimeout();
+});
+
+/* ---- Notifications Bell ---- */
+let notifications = [];
+
+function addNotification(icon, text, time = null) {
+  notifications.unshift({
+    icon,
+    text,
+    time: time || new Date().toLocaleTimeString(),
+    id: Date.now()
+  });
+
+  // Keep max 20 notifications
+  if (notifications.length > 20) notifications.pop();
+
+  updateNotifBadge();
+  renderNotifDropdown();
+}
+
+function updateNotifBadge() {
+  const badge = document.getElementById("notifBadge");
+  if (!badge) return;
+  if (notifications.length > 0) {
+    badge.textContent = notifications.length > 9 ? "9+" : notifications.length;
+    badge.classList.add("visible");
+  } else {
+    badge.classList.remove("visible");
+  }
+}
+
+function renderNotifDropdown() {
+  const list = document.getElementById("notifList");
+  if (!list) return;
+
+  if (notifications.length === 0) {
+    list.innerHTML = `<div class="notif-empty">🔔 No notifications yet</div>`;
+    return;
+  }
+
+  list.innerHTML = notifications.map(n => `
+    <div class="notif-item">
+      <span class="notif-icon">${n.icon}</span>
+      <div class="notif-text">
+        ${n.text}
+        <div class="notif-time">${n.time}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function initNotifBell() {
+  const bell = document.getElementById("notifBell");
+  const dropdown = document.getElementById("notifDropdown");
+  const clearBtn = document.getElementById("notifClear");
+
+  if (!bell || !dropdown) return;
+
+  bell.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("open");
+    renderNotifDropdown();
+  });
+
+  document.addEventListener("click", () => {
+    dropdown.classList.remove("open");
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      notifications = [];
+      updateNotifBadge();
+      renderNotifDropdown();
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initNotifBell();
+});

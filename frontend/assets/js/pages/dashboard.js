@@ -145,6 +145,30 @@ async function loadDashboard() {
     kpiTodaySales.textContent = formatKES(todaySales);
     kpiMonthSales.textContent = formatKES(monthSales);
 
+    // Sales target progress bar
+    const salesTarget = localStorage.getItem("salesTarget");
+    const targetSection = document.getElementById("salesTargetSection");
+    const progressBar = document.getElementById("salesProgressBar");
+    const targetLabel = document.getElementById("salesTargetLabel");
+    const progressLeft = document.getElementById("salesProgressLeft");
+    const progressPct = document.getElementById("salesProgressPct");
+
+    if (salesTarget && Number(salesTarget) > 0 && IS_ADMIN_MANAGER) {
+      const target = Number(salesTarget);
+      const pct = Math.min((monthSales / target) * 100, 100);
+      const remaining = Math.max(target - monthSales, 0);
+
+      if (targetSection) targetSection.style.display = "";
+      if (progressBar) {
+        progressBar.style.width = `${pct}%`;
+        if (pct >= 80) progressBar.classList.add("warning");
+        else progressBar.classList.remove("warning");
+      }
+      if (targetLabel) targetLabel.textContent = `${formatKES(monthSales)} of ${formatKES(target)}`;
+      if (progressLeft) progressLeft.textContent = remaining > 0 ? `${formatKES(remaining)} remaining` : "🎉 Target reached!";
+      if (progressPct) progressPct.textContent = `${Math.round(pct)}%`;
+    }
+
     // Recent sales table
     const recentSales = filteredSales
       .slice()
@@ -249,6 +273,39 @@ async function loadDashboard() {
           `;
         } catch {
           topPerformersEl.textContent = "Top performers unavailable.";
+        }
+      }
+       // Add notifications for important events
+      if (IS_ADMIN_MANAGER) {
+        // Notify about pending M-Pesa transactions
+        const pendingMpesa = txList.filter(t =>
+          t.status === "pending" && t.channel === "mpesa"
+        );
+        if (pendingMpesa.length > 0) {
+          addNotification(
+            "💳",
+            `${pendingMpesa.length} M-Pesa payment${pendingMpesa.length > 1 ? "s" : ""} still pending`
+          );
+        }
+
+        // Notify about expense alert
+        const threshold = localStorage.getItem("expenseThreshold");
+        if (threshold) {
+          const totalMonthExp = expList
+            .filter(e => safeText(e.expense_date).slice(0, 7) === mKey)
+            .reduce((s, e) => s + Number(e.amount || 0), 0);
+          const pct = (totalMonthExp / Number(threshold)) * 100;
+          if (pct >= 80) {
+            addNotification(
+              "⚠️",
+              `Expenses at ${Math.round(pct)}% of monthly budget`
+            );
+          }
+        }
+
+        // Notify about today's sales
+        if (todaySales > 0) {
+          addNotification("💰", `Today's sales: ${formatKES(todaySales)}`);
         }
       }
     }
